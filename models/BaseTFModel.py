@@ -33,7 +33,7 @@ class BaseTFModel(Model):
 
         # Expose interface
         self.get_n_params = lambda: n_params
-        self.param_load = (
+        self.load_params = (
             lambda p: sess.run(load_ops, feed_dict={params_in: p})
         )
 

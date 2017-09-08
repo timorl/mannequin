@@ -1,20 +1,25 @@
 
 from .BaseWrapper import BaseWrapper
 
-class Softmax(BaseWrapper):
+class SampleFrom(BaseWrapper):
     def __init__(self, inner):
         import numpy as np
 
-        def softmax(v):
-            v = np.exp(v - np.amax(v))
-            return v / v.sum()
+        rng = np.random.RandomState()
+
+        def choice(v):
+            assert len(v.shape) == 1
+            i = rng.choice(len(v), p=v)
+            v[:] = 0.0
+            v[i] = 1.0
+            return v
 
         def step(states, inputs):
             states, outputs = inner.step(states, inputs)
             outputs = np.array(outputs)
 
             for i in range(len(outputs)):
-                outputs[i] = softmax(outputs[i])
+                outputs[i] = choice(outputs[i])
 
             return states, outputs
 

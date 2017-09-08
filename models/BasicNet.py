@@ -37,32 +37,31 @@ class BasicNet(BaseTFModel):
             # Backpropagation
             params = graph.get_collection("variables")
             rewards_in = tf.placeholder(tf.float32, [None, layers[-1]])
-            intermediate = tf.reduce_sum(tf.reduce_mean(
-                tf.multiply(rewards_in, outputs),
-                axis=0
-            ))
+            intermediate = tf.reduce_sum(
+                tf.multiply(rewards_in, outputs)
+            )
             grad_list = tf.gradients(intermediate, params)
             grad_list = [tf.reshape(g, [-1]) for g in grad_list]
             param_grad = tf.concat(grad_list, axis=0)
 
             def param_gradient(trajectories):
-                inputs = []
-                rewards = []
+                all_inputs = []
+                all_rewards = []
                 for t in trajectories:
                     for i, _, r in t:
-                        inputs.append(i)
-                        rewards.append(r)
+                        all_inputs.append(i)
+                        all_rewards.append(r / len(t))
 
                 grad = sess.run(
                     param_grad,
                     feed_dict={
-                        inputs_in: inputs,
-                        rewards_in: rewards
+                        inputs_in: all_inputs,
+                        rewards_in: all_rewards
                     }
                 )
 
                 assert grad.shape == (self.n_params,)
-                return grad
+                return grad / len(trajectories)
 
             def step(states, inputs):
                 return states, sess.run(

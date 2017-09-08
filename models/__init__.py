@@ -12,7 +12,7 @@ class Model:
     def get_n_params(self): # -> {int}
         raise NotImplementedError
 
-    def param_load(self, params):
+    def load_params(self, params):
         raise NotImplementedError
 
     def param_gradient(self, trajectories): # -> {ndarray}
@@ -34,4 +34,8 @@ class Model:
         return object.__getattribute__(self, name)
 
 from .BasicNet import BasicNet
+from .EpisodeSum import EpisodeSum
+from .NormalizedRewards import NormalizedRewards
+from .Reinforce import Reinforce
+from .SampleFrom import SampleFrom
 from .Softmax import Softmax

@@ -1,46 +1,46 @@
 #!/usr/bin/python3
 
+import os
+if "DEBUG" in os.environ:
+    import sys
+    import IPython.core.ultratb
+    sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
+
 import numpy as np
+from worlds import Mnist, Accuracy
 from models import BasicNet, Softmax
 
 def norm(v):
     return np.sqrt(np.sum(np.square(v)))
 
-def train(model, next_batch):
+def train(model):
+    world = Mnist()
     params = np.random.randn(model.n_params)
-    model.param_load(params)
+    model.load_params(params)
     for _ in range(200):
-        inputs, labels = next_batch(128)
-        _, outputs = model.step([None] * len(inputs), inputs)
-        trajs = [
-            [(i, o, l - o)]
-            for i, o, l in zip(inputs, outputs, labels)
-        ]
+        trajs = world.trajectories(model, 128)
         update = model.param_gradient(trajs) * 300.0
         print("Update norm: %12.6f" % norm(update))
         params += update
-        model.param_load(params)
+        model.load_params(params)
     return params
 
-def score(model, next_batch):
-    inputs, labels = next_batch(5000)
-    _, outputs = model.step([None] * len(inputs), inputs)
-    correct = (np.argmax(labels, axis=1) == np.argmax(outputs, axis=1))
-    return np.mean(correct.astype(np.float32))
+def score(model, n=5000):
+    world = Accuracy(Mnist(test=True))
+    rew_sum = 0.0
+    for t in world.trajectories(model, n):
+        for o, a, r in t:
+            rew_sum += np.mean(r)
+    return rew_sum / n
 
 def run():
-    import tensorflow.examples.tutorials.mnist as tf_mnist
-    mnist = tf_mnist.input_data.read_data_sets(
-        "/tmp/mnist-download",
-        validation_size=0,
-        one_hot=True
-    )
+    model = BasicNet([28*28, "relu", 128, "relu", 10])
+    model = Softmax(model)
 
-    model = Softmax(BasicNet([28*28, "relu", 128, "relu", 10]))
-    train(model, mnist.train.next_batch)
+    train(model)
+    s = score(model)
 
-    s = score(model, mnist.test.next_batch)
-    print("Accuracy on test: %.2f%%" % (100.0 * s))
+    print("Accuracy on test:         %9.2f%%" % (100.0 * s))
     assert s > 0.9
     assert s < 1.0
 
