@@ -2,7 +2,7 @@
 from . import World
 
 class Accuracy(World):
-    def __init__(self, world):
+    def __init__(self, inner):
         import numpy as np
 
         def process(o, a, r):
@@ -12,7 +12,7 @@ class Accuracy(World):
             return o, a, [1.0] if answer == wanted else [0.0]
 
         def trajectories(agent, n):
-            trajs = world.trajectories(agent, n)
+            trajs = inner.trajectories(agent, n)
             return [[process(*e) for e in t] for t in trajs]
 
         self.trajectories = trajectories

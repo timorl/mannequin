@@ -1,7 +1,9 @@
 
+from . import verify_shapes
 from .BaseWrapper import BaseWrapper
 
-class SampleFrom(BaseWrapper):
+@verify_shapes
+class RandomChoice(BaseWrapper):
     def __init__(self, inner):
         import numpy as np
 

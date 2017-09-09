@@ -1,7 +1,9 @@
 
+from . import verify_shapes
 from .BaseWrapper import BaseWrapper
 
-class Reinforce(BaseWrapper):
+@verify_shapes
+class OffPolicy(BaseWrapper):
     def __init__(self, inner):
         import numpy as np
 
@@ -23,15 +25,15 @@ class Reinforce(BaseWrapper):
                 sta, model_out = inner.step(sta, inp)
 
                 # Verify array shapes
-                rew = np.asarray(rew)
+                rew = np.asarray(rew).reshape(-1)
                 real_out = np.asarray(real_out)
                 model_out = np.asarray(model_out)
-                assert rew.shape == (len(pos), 1)
+                assert rew.shape == (len(pos),)
                 assert len(real_out) == len(rew)
                 assert real_out.shape == model_out.shape
 
                 # True off-policy version of REINFORCE (!!!)
-                rew = ((real_out - model_out).T * rew.T).T
+                rew = np.multiply((real_out - model_out).T, rew.T).T
 
                 for n, s, i, o, r in zip(pos, sta, inp, model_out, rew):
                     states[n] = s

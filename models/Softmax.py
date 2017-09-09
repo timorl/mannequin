@@ -1,6 +1,8 @@
 
+from . import verify_shapes
 from .BaseWrapper import BaseWrapper
 
+@verify_shapes
 class Softmax(BaseWrapper):
     def __init__(self, inner):
         import numpy as np

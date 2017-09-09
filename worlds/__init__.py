@@ -6,5 +6,8 @@ class World:
         raise NotImplementedError
 
 from .Accuracy import Accuracy
+from .EpisodeAvg import EpisodeAvg
+from .Future import Future
 from .Gym import Gym
 from .Mnist import Mnist
+from .Normalized import Normalized

@@ -1,6 +1,8 @@
 
+from . import verify_shapes
 from .BaseTFModel import BaseTFModel
 
+@verify_shapes
 class BasicNet(BaseTFModel):
     def __init__(self, layers):
         import numpy as np
@@ -31,37 +33,43 @@ class BasicNet(BaseTFModel):
                     outputs = affine(outputs, l)
                 elif l == "relu":
                     outputs = tf.nn.relu(outputs)
+                elif l == "lrelu":
+                    outputs = (
+                        tf.nn.relu(outputs)
+                        - 0.1 * tf.nn.relu(-outputs)
+                    )
                 else:
                     raise ValueError("Unknown layer type: %s" % l)
 
             # Backpropagation
             params = graph.get_collection("variables")
             rewards_in = tf.placeholder(tf.float32, [None, layers[-1]])
-            intermediate = tf.reduce_sum(
-                tf.multiply(rewards_in, outputs)
-            )
+            intermediate = tf.reduce_sum(tf.reduce_mean(
+                tf.multiply(rewards_in, outputs),
+                axis=0 # (batch)
+            ))
             grad_list = tf.gradients(intermediate, params)
             grad_list = [tf.reshape(g, [-1]) for g in grad_list]
             param_grad = tf.concat(grad_list, axis=0)
 
             def param_gradient(trajectories):
+                # IMPORTANT: Actions in trajectories are ignored
+                # (assumed to be generated from this model).
+                # So learning only works if it's strictly on-policy.
                 all_inputs = []
                 all_rewards = []
                 for t in trajectories:
                     for i, _, r in t:
                         all_inputs.append(i)
-                        all_rewards.append(r / len(t))
+                        all_rewards.append(r)
 
-                grad = sess.run(
+                return sess.run(
                     param_grad,
                     feed_dict={
                         inputs_in: all_inputs,
                         rewards_in: all_rewards
                     }
                 )
-
-                assert grad.shape == (self.n_params,)
-                return grad / len(trajectories)
 
             def step(states, inputs):
                 return states, sess.run(

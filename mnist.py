@@ -1,11 +1,5 @@
 #!/usr/bin/python3
 
-import os
-if "DEBUG" in os.environ:
-    import sys
-    import IPython.core.ultratb
-    sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
-
 import numpy as np
 from worlds import Mnist, Accuracy
 from models import BasicNet, Softmax
