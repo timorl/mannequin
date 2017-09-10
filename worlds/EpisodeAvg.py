@@ -9,8 +9,7 @@ class EpisodeAvg(World):
             rew_sum = 0.0
             for o, a, r in traj:
                 assert len(r) == 1
-                assert isinstance(r[0], (float, np.float32))
-                rew_sum += r[0]
+                rew_sum += float(r[0])
 
             rew_sum /= len(traj)
             for o, a, r in traj:

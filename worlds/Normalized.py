@@ -13,8 +13,7 @@ class Normalized(World):
             for t in trajs:
                 for o, a, r in t:
                     assert len(r) == 1
-                    assert isinstance(r[0], (float, np.float32))
-                    all_rewards.append(r[0])
+                    all_rewards.append(float(r[0]))
 
             assert len(all_rewards) >= 2
             avg = np.mean(all_rewards)

@@ -13,8 +13,7 @@ class PrintReward(World):
             for t in trajs:
                 for o, a, r in t:
                     assert len(r) == 1
-                    assert isinstance(r[0], (np.float32, float))
-                    rew_sum += r[0]
+                    rew_sum += float(r[0])
             rew_sum /= len(trajs)
 
             info = "Reward/episode: %10.2f" % rew_sum

@@ -10,8 +10,7 @@ class Future(World):
 
             for o, a, r in reversed(traj):
                 assert len(r) == 1
-                assert isinstance(r[0], (float, np.float32))
-                rew_sum = rew_sum * (1.0 - (1.0 / horizon)) + r[0]
+                rew_sum = rew_sum * (1.0 - (1.0/horizon)) + float(r[0])
                 r[0] = rew_sum
 
             return traj

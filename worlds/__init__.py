@@ -6,6 +6,7 @@ class World(object):
         raise NotImplementedError
 
 from .Accuracy import Accuracy
+from .ActionNoise import ActionNoise
 from .EpisodeAvg import EpisodeAvg
 from .Future import Future
 from .Gym import Gym

@@ -1,8 +1,13 @@
 #!/usr/bin/python3
 
 import os
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import numpy as np
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+if "DEBUG" in os.environ:
+    import sys
+    import IPython.core.ultratb
+    sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Mnist, Accuracy, PrintReward
 from models import BasicNet, Softmax

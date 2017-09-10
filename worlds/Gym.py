@@ -75,7 +75,7 @@ class Gym(World):
                 next_sta, next_obs, next_obs_idx = [], [], []
                 for s, o, a, i in zip(sta, obs, act, obs_idx):
                     next_o, r, done, _ = envs[i].step(process_action(a))
-                    trajs[i].append((o, a, [r]))
+                    trajs[i].append((o, a, [float(r)]))
                     if not done:
                         next_sta.append(s)
                         next_obs.append(process_obs(next_o))
