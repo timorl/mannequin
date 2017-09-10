@@ -1,5 +1,5 @@
 
-class Model:
+class Model(object):
     def get_input_shape(self): # -> {tuple of int}
         raise NotImplementedError
 

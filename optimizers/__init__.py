@@ -1,5 +1,5 @@
 
-class Optimizer:
+class Optimizer(object):
     # def __init__(self, value)
     #     ...
 
@@ -15,4 +15,5 @@ class Optimizer:
     def feed_gradients(self, gradients):
         raise NotImplementedError
 
+from .Adam import Adam
 from .Momentum import Momentum

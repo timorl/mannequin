@@ -19,8 +19,8 @@ class RunningMean(object):
         self.get = lambda: biased_mean / (1.0 - decay_power)
         self.update = update
 
-class Momentum(Optimizer):
-    def __init__(self, value, lr, decay):
+class Adam(Optimizer):
+    def __init__(self, value, lr, decay, var_decay=0.999, epsilon=1e-8):
         import numpy as np
         import os
 
@@ -31,6 +31,7 @@ class Momentum(Optimizer):
         assert lr > 0.0
 
         running_mean = RunningMean(decay)
+        running_var = RunningMean(var_decay)
         last_update = 0.0
 
         def norm(v):
@@ -50,7 +51,10 @@ class Momentum(Optimizer):
             assert grad.shape == value.shape
 
             running_mean.update(grad)
-            last_update = lr * running_mean.get()
+            running_var.update(np.square(grad))
+            last_update = lr * (
+                running_mean.get() / (epsilon + running_var.get())
+            )
 
             value = value + last_update
             value.setflags(write=False)

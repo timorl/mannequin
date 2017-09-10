@@ -3,7 +3,7 @@
 import numpy as np
 from worlds import Gym, Normalized, Future
 from models import BasicNet, Softmax, OffPolicy, RandomChoice
-from optimizers import Momentum
+from optimizers import Adam
 
 world = Gym("CartPole-v1")
 
@@ -12,13 +12,13 @@ def train(model):
         Future(world, horizon=500)
     )
 
-    opt = Momentum(
+    opt = Adam(
         np.random.randn(model.n_params) * 0.1,
-        lr=100.0,
-        momentum=0.8
+        lr=0.00015,
+        decay=0.9
     )
 
-    for _ in range(1000):
+    for _ in range(30):
         grads = []
 
         for params in opt.get_requests():
@@ -26,6 +26,7 @@ def train(model):
 
             trajs = train_world.trajectories(model, 16)
             ep_len = np.mean([len(t) for t in trajs])
+
             print("%30s | %s %.1f" % (opt.get_info(),
                 "=" * int(round(0.1 * ep_len)), ep_len))
 
