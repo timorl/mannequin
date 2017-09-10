@@ -3,13 +3,10 @@ class Optimizer(object):
     # def __init__(self, value)
     #     ...
 
-    def get_best_value(self): # -> {ndarray}
+    def get_value(self): # -> {ndarray}
         raise NotImplementedError
 
-    def get_requests(self): # -> {list of ndarray}
-        raise NotImplementedError
-
-    def feed_gradients(self, gradients):
+    def apply_gradient(self, gradient):
         raise NotImplementedError
 
 from .Adam import Adam

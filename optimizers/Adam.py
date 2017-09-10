@@ -39,14 +39,10 @@ class Adam(Optimizer):
         def norm(v):
             return np.sqrt(np.sum(np.square(v)))
 
-        def get_requests():
-            return [value]
-
-        def feed_gradients(gradients):
+        def apply_gradient(grad):
             nonlocal value
 
-            assert len(gradients) == 1
-            grad = np.asarray(gradients[0])
+            grad = np.asarray(grad)
             assert grad.shape == value.shape
 
             running_mean.update(grad)
@@ -63,6 +59,5 @@ class Adam(Optimizer):
             value = value + update
             value.setflags(write=False)
 
-        self.get_best_value = lambda: value
-        self.get_requests = get_requests
-        self.feed_gradients = feed_gradients
+        self.get_value = lambda: value
+        self.apply_gradient = apply_gradient

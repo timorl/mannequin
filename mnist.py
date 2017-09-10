@@ -13,8 +13,12 @@ from worlds import Mnist, Accuracy, PrintReward
 from models import BasicNet, Softmax
 from optimizers import Momentum
 
-def train(model):
+def run():
+    model = BasicNet([28*28, "relu", 128, "relu", 10])
+    model = Softmax(model)
+
     world = Mnist()
+
     opt = Momentum(
         np.random.randn(model.n_params),
         lr=300.0,
@@ -23,20 +27,10 @@ def train(model):
     )
 
     for _ in range(200):
-        grads = []
-        for params in opt.get_requests():
-            model.load_params(params)
-            trajs = world.trajectories(model, 128)
-            grads.append(model.param_gradient(trajs))
-        opt.feed_gradients(grads)
-
-    model.load_params(opt.get_best_value())
-
-def run():
-    model = BasicNet([28*28, "relu", 128, "relu", 10])
-    model = Softmax(model)
-
-    train(model)
+        model.load_params(opt.get_value())
+        trajs = world.trajectories(model, 128)
+        grad = model.param_gradient(trajs)
+        opt.apply_gradient(grad)
 
     test_world = Accuracy(Mnist(test=True))
     PrintReward(test_world).trajectories(model, 5000)

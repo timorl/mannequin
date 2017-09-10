@@ -36,14 +36,11 @@ def run():
     )
 
     for _ in range(30):
-        grads = []
-        for params in opt.get_requests():
-            model.load_params(params)
-            trajs = train_world.trajectories(model, 16)
-            grads.append(model.param_gradient(trajs))
-        opt.feed_gradients(grads)
+        model.load_params(opt.get_value())
+        trajs = train_world.trajectories(model, 16)
+        grad = model.param_gradient(trajs)
+        opt.apply_gradient(grad)
 
-    model.load_params(opt.get_best_value())
     for _ in range(5):
         world.render(model)
 
