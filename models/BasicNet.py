@@ -4,7 +4,7 @@ from .BaseTFModel import BaseTFModel
 
 @verify_shapes
 class BasicNet(BaseTFModel):
-    def __init__(self, layers):
+    def __init__(self, *layers):
         import numpy as np
         import tensorflow as tf
 

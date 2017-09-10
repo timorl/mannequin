@@ -14,7 +14,7 @@ from models import BasicNet, Softmax, OffPolicy, RandomChoice
 from optimizers import Adam
 
 def run():
-    model = BasicNet([4, "lrelu", 64, "lrelu", 2])
+    model = BasicNet(4, 64, "lrelu", 2)
     model = Softmax(model)
     model = OffPolicy(model)
     model = RandomChoice(model)

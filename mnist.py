@@ -14,7 +14,7 @@ from models import BasicNet, Softmax
 from optimizers import Momentum
 
 def run():
-    model = BasicNet([28*28, "relu", 128, "relu", 10])
+    model = BasicNet(28*28, 128, "lrelu", 10)
     model = Softmax(model)
 
     world = Mnist()
