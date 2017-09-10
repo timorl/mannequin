@@ -20,7 +20,7 @@ class RunningMean(object):
         self.update = update
 
 class Momentum(Optimizer):
-    def __init__(self, value, lr, decay):
+    def __init__(self, value, lr, decay, print_info=False):
         import numpy as np
         import os
 
@@ -31,6 +31,9 @@ class Momentum(Optimizer):
         assert lr > 0.0
 
         running_mean = RunningMean(decay)
+
+        def norm(v):
+            return np.sqrt(np.sum(np.square(v)))
 
         def get_requests():
             return [value]
@@ -43,8 +46,12 @@ class Momentum(Optimizer):
             assert grad.shape == value.shape
 
             running_mean.update(grad)
+            update = lr * running_mean.get()
 
-            value = value + lr * running_mean.get()
+            if print_info:
+                print("Update norm: %10.4f" % norm(update))
+
+            value = value + update
             value.setflags(write=False)
 
         self.get_best_value = lambda: value

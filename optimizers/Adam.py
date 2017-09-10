@@ -20,7 +20,10 @@ class RunningMean(object):
         self.update = update
 
 class Adam(Optimizer):
-    def __init__(self, value, lr, decay, var_decay=0.999, epsilon=1e-8):
+    def __init__(self, value,
+            lr, decay, var_decay=0.999,
+            epsilon=1e-8, square=False,
+            print_info=False):
         import numpy as np
         import os
 
@@ -32,6 +35,9 @@ class Adam(Optimizer):
 
         running_mean = RunningMean(decay)
         running_var = RunningMean(var_decay)
+
+        def norm(v):
+            return np.sqrt(np.sum(np.square(v)))
 
         def get_requests():
             return [value]
@@ -46,9 +52,15 @@ class Adam(Optimizer):
             running_mean.update(grad)
             running_var.update(np.square(grad))
 
-            value = value + lr * (
-                running_mean.get() / (epsilon + running_var.get())
-            )
+            var = running_var.get()
+            if not square:
+                var = np.sqrt(var)
+            update = lr * (running_mean.get() / (epsilon + var))
+
+            if print_info:
+                print("Update norm: %10.4f" % norm(update))
+
+            value = value + update
             value.setflags(write=False)
 
         self.get_best_value = lambda: value

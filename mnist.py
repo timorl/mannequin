@@ -2,7 +2,6 @@
 
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-import tqdm
 import numpy as np
 
 from worlds import Mnist, Accuracy, PrintReward
@@ -14,10 +13,11 @@ def train(model):
     opt = Momentum(
         np.random.randn(model.n_params),
         lr=300.0,
-        decay=0.9
+        decay=0.9,
+        print_info=True
     )
 
-    for _ in tqdm.trange(200):
+    for _ in range(200):
         grads = []
         for params in opt.get_requests():
             model.load_params(params)

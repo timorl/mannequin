@@ -21,7 +21,8 @@ def train(model):
     opt = Adam(
         np.random.randn(model.n_params) * 0.1,
         lr=0.0001,
-        decay=0.9
+        decay=0.8,
+        square=True
     )
 
     for _ in range(30):
