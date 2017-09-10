@@ -41,7 +41,7 @@ def run():
         grad = model.param_gradient(trajs)
         opt.apply_gradient(grad)
 
-    for _ in range(5):
+    while True:
         world.render(model)
 
 if __name__ == "__main__":
