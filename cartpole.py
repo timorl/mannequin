@@ -3,50 +3,37 @@
 import numpy as np
 from worlds import Gym, Normalized, Future
 from models import BasicNet, Softmax, OffPolicy, RandomChoice
+from optimizers import Momentum
 
 world = Gym("CartPole-v1")
 
-def norm(v):
-    return np.sqrt(np.sum(np.square(v)))
-
 def train(model):
-    train_world = Normalized(Future(world, horizon=500))
+    train_world = Normalized(
+        Future(world, horizon=500)
+    )
 
-    params = np.random.randn(model.n_params) * 0.1
-    model.load_params(params)
+    opt = Momentum(
+        np.random.randn(model.n_params) * 0.1,
+        lr=100.0,
+        momentum=0.8
+    )
 
-    lr = 0.0
-    update = 0.0
-    running_ep_len = 20.0
+    for _ in range(1000):
+        grads = []
 
-    while True:
-        model.load_params(params)
+        for params in opt.get_requests():
+            model.load_params(params)
 
-        trajs = train_world.trajectories(model, 16)
-        grad = model.param_gradient(trajs)
+            trajs = train_world.trajectories(model, 16)
+            ep_len = np.mean([len(t) for t in trajs])
+            print("%30s | %s %.1f" % (opt.get_info(),
+                "=" * int(round(0.1 * ep_len)), ep_len))
 
-        ep_len = np.mean([len(t) for t in trajs])
-        if ep_len >= 400.0:
-            break
-        running_ep_len = running_ep_len * 0.8 + ep_len * 0.2
+            grads.append(model.param_gradient(trajs))
 
-        print("Update norm: %9.6f  [%s]  ep=%.1f"
-            % (norm(update) * lr,
-                "=" * int(round(0.1 * ep_len)), ep_len), end="")
+        opt.feed_gradients(grads)
 
-        if ep_len > running_ep_len + 30.0:
-            update = 0.0
-            running_ep_len = ep_len
-            lr = 700.0 / running_ep_len
-            print("  lr=%.1f  [BOUNCE]" % lr)
-        else:
-            lr = 700.0 / running_ep_len
-            print("  lr=%.1f" % lr)
-
-        update = update * 0.98 + grad
-        params += update * lr
-
-    return params
+    model.load_params(opt.get_best_value())
 
 def score(model):
     rew_sum = 0.0

@@ -66,7 +66,7 @@ class Gym(World):
                 if len(trajs[obs_idx[0]]) == max_steps:
                     break
 
-                # Ask the outer agent to process observations
+                # Ask the agent to process observations
                 sta, act = agent.step(sta, obs)
                 assert len(sta) == len(obs_idx)
                 assert len(act) == len(obs_idx)
