@@ -1,42 +1,40 @@
 #!/usr/bin/python3
 
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+import tqdm
 import numpy as np
-from worlds import Mnist, Accuracy
-from models import BasicNet, Softmax
 
-def norm(v):
-    return np.sqrt(np.sum(np.square(v)))
+from worlds import Mnist, Accuracy, PrintReward
+from models import BasicNet, Softmax
+from optimizers import Momentum
 
 def train(model):
     world = Mnist()
-    params = np.random.randn(model.n_params)
-    model.load_params(params)
-    for _ in range(200):
-        trajs = world.trajectories(model, 128)
-        update = model.param_gradient(trajs) * 300.0
-        print("Update norm: %12.6f" % norm(update))
-        params += update
-        model.load_params(params)
-    return params
+    opt = Momentum(
+        np.random.randn(model.n_params),
+        lr=300.0,
+        decay=0.9
+    )
 
-def score(model, n=5000):
-    world = Accuracy(Mnist(test=True))
-    rew_sum = 0.0
-    for t in world.trajectories(model, n):
-        for o, a, r in t:
-            rew_sum += np.mean(r)
-    return rew_sum / n
+    for _ in tqdm.trange(200):
+        grads = []
+        for params in opt.get_requests():
+            model.load_params(params)
+            trajs = world.trajectories(model, 128)
+            grads.append(model.param_gradient(trajs))
+        opt.feed_gradients(grads)
+
+    model.load_params(opt.get_best_value())
 
 def run():
     model = BasicNet([28*28, "relu", 128, "relu", 10])
     model = Softmax(model)
 
     train(model)
-    s = score(model)
 
-    print("Accuracy on test:         %9.2f%%" % (100.0 * s))
-    assert s > 0.9
-    assert s < 1.0
+    test_world = Accuracy(Mnist(test=True))
+    PrintReward(test_world).trajectories(model, 5000)
 
 if __name__ == "__main__":
     run()

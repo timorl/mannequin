@@ -9,7 +9,7 @@ class Accuracy(World):
             assert a.shape == r.shape
             answer = np.argmax(a)
             wanted = np.argmax(a + r)
-            return o, a, [1.0] if answer == wanted else [0.0]
+            return o, a, [100.0] if answer == wanted else [0.0]
 
         def trajectories(agent, n):
             trajs = inner.trajectories(agent, n)

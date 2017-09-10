@@ -32,19 +32,12 @@ class Adam(Optimizer):
 
         running_mean = RunningMean(decay)
         running_var = RunningMean(var_decay)
-        last_update = 0.0
-
-        def norm(v):
-            return np.sqrt(np.sum(np.square(v)))
-
-        def get_info():
-            return ("last update: %.2f" % norm(last_update))
 
         def get_requests():
             return [value]
 
         def feed_gradients(gradients):
-            nonlocal value, last_update
+            nonlocal value
 
             assert len(gradients) == 1
             grad = np.asarray(gradients[0])
@@ -52,14 +45,12 @@ class Adam(Optimizer):
 
             running_mean.update(grad)
             running_var.update(np.square(grad))
-            last_update = lr * (
+
+            value = value + lr * (
                 running_mean.get() / (epsilon + running_var.get())
             )
-
-            value = value + last_update
             value.setflags(write=False)
 
-        self.get_info = get_info
         self.get_best_value = lambda: value
         self.get_requests = get_requests
         self.feed_gradients = feed_gradients

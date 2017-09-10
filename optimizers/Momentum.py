@@ -31,31 +31,22 @@ class Momentum(Optimizer):
         assert lr > 0.0
 
         running_mean = RunningMean(decay)
-        last_update = 0.0
-
-        def norm(v):
-            return np.sqrt(np.sum(np.square(v)))
-
-        def get_info():
-            return ("last update: %.2f" % norm(last_update))
 
         def get_requests():
             return [value]
 
         def feed_gradients(gradients):
-            nonlocal value, last_update
+            nonlocal value
 
             assert len(gradients) == 1
             grad = np.asarray(gradients[0])
             assert grad.shape == value.shape
 
             running_mean.update(grad)
-            last_update = lr * running_mean.get()
 
-            value = value + last_update
+            value = value + lr * running_mean.get()
             value.setflags(write=False)
 
-        self.get_info = get_info
         self.get_best_value = lambda: value
         self.get_requests = get_requests
         self.feed_gradients = feed_gradients
