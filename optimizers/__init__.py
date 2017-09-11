@@ -1,13 +1,5 @@
 
-class Optimizer(object):
-    # def __init__(self, value)
-    #     ...
-
-    def get_value(self): # -> {ndarray}
-        raise NotImplementedError
-
-    def apply_gradient(self, gradient):
-        raise NotImplementedError
+from .Optimizer import Optimizer
 
 from .Adam import Adam
 from .Momentum import Momentum

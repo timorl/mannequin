@@ -1,6 +1,6 @@
 
-from . import verify_shapes
 from .BaseWrapper import BaseWrapper
+from ._verify_shapes import verify_shapes
 
 @verify_shapes
 class RandomChoice(BaseWrapper):
