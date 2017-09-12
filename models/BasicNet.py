@@ -43,31 +43,21 @@ class BasicNet(BaseTFModel):
 
             # Backpropagation
             params = graph.get_collection("variables")
-            rewards_in = tf.placeholder(tf.float32, [None, layers[-1]])
+            out_grad_in = tf.placeholder(tf.float32, [None, layers[-1]])
             intermediate = tf.reduce_sum(tf.reduce_mean(
-                tf.multiply(rewards_in, outputs),
+                tf.multiply(out_grad_in, outputs),
                 axis=0 # (batch)
             ))
             grad_list = tf.gradients(intermediate, params)
             grad_list = [tf.reshape(g, [-1]) for g in grad_list]
             param_grad = tf.concat(grad_list, axis=0)
 
-            def param_gradient(trajectories):
-                # IMPORTANT: Actions in trajectories are ignored
-                # (assumed to be generated from this model).
-                # So learning only works if it's strictly on-policy.
-                all_inputs = []
-                all_rewards = []
-                for t in trajectories:
-                    for i, _, r in t:
-                        all_inputs.append(i)
-                        all_rewards.append(r)
-
+            def param_gradient(states, inputs, output_gradients):
                 return sess.run(
                     param_grad,
                     feed_dict={
-                        inputs_in: all_inputs,
-                        rewards_in: all_rewards
+                        inputs_in: inputs,
+                        out_grad_in: output_gradients
                     }
                 )
 

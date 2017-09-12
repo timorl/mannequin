@@ -10,13 +10,13 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Gym, Normalized, Future, PrintReward
-from models import BasicNet, Softmax, OffPolicy, RandomChoice
+from models import BasicNet, Softmax, RandomChoice
+from execute import policy_gradient
 from optimizers import Adam
 
 def run():
     model = BasicNet(4, 64, "lrelu", 2)
     model = Softmax(model)
-    model = OffPolicy(model)
     model = RandomChoice(model)
 
     world = Gym("CartPole-v1")
@@ -38,7 +38,7 @@ def run():
     for _ in range(30):
         model.load_params(opt.get_value())
         trajs = train_world.trajectories(model, 16)
-        grad = model.param_gradient(trajs)
+        grad = policy_gradient(model, trajs)
         opt.apply_gradient(grad)
 
     while True:

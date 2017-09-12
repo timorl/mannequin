@@ -6,16 +6,9 @@ class EpisodeAvg(World):
         import numpy as np
 
         def process(traj):
-            rew_sum = 0.0
-            for o, a, r in traj:
-                assert len(r) == 1
-                rew_sum += float(r[0])
-
-            rew_sum /= len(traj)
-            for o, a, r in traj:
-                r[0] = rew_sum
-
-            return traj
+            all_rew = [float(r) for o, a, r in traj]
+            avg_rew = np.mean(all_rew)
+            return [(o, a, avg_rew) for o, a, r in traj]
 
         def trajectories(agent, n):
             trajs = inner.trajectories(agent, n)

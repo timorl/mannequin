@@ -7,13 +7,13 @@ class Future(World):
 
         def process(traj):
             rew_sum = 0.0
+            reversed_out = []
 
             for o, a, r in reversed(traj):
-                assert len(r) == 1
-                rew_sum = rew_sum * (1.0 - (1.0/horizon)) + float(r[0])
-                r[0] = rew_sum
+                rew_sum = rew_sum * (1.0 - (1.0/horizon)) + float(r)
+                reversed_out.append((o, a, rew_sum))
 
-            return traj
+            return list(reversed(reversed_out))
 
         def trajectories(agent, n):
             trajs = inner.trajectories(agent, n)

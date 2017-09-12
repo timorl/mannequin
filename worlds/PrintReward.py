@@ -12,8 +12,7 @@ class PrintReward(World):
             rew_sum = 0.0
             for t in trajs:
                 for o, a, r in t:
-                    assert len(r) == 1
-                    rew_sum += float(r[0])
+                    rew_sum += float(r)
             rew_sum /= len(trajs)
 
             info = "Reward/episode: %10.2f" % rew_sum

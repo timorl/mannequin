@@ -1,24 +1,24 @@
 
 class Model(object):
-    def get_input_shape(self): # -> {tuple of int}
+    # Note: models are NOT assumed to be thread-safe
+    # (calls can only be made from one thread at a time)
+
+    def get_input_shape(self):
         raise NotImplementedError
 
-    def get_output_shape(self): # -> {tuple of int}
+    def get_output_shape(self):
         raise NotImplementedError
 
-    def get_reward_shape(self): # -> {tuple of int}
-        raise NotImplementedError
-
-    def get_n_params(self): # -> {int}
+    def get_n_params(self):
         raise NotImplementedError
 
     def load_params(self, params):
         raise NotImplementedError
 
-    def param_gradient(self, trajectories): # -> {ndarray}
+    def param_gradient(self, states, inputs, output_gradients):
         raise NotImplementedError
 
-    def step(states, inputs): # -> (states, outputs)
+    def step(self, states, inputs): # -> (states, outputs)
         raise NotImplementedError
 
     # For convenience only
@@ -27,8 +27,6 @@ class Model(object):
             return self.get_input_shape()
         if name in ("out_shape", "output_shape"):
             return self.get_output_shape()
-        if name in ("rew_shape", "reward_shape"):
-            return self.get_reward_shape()
         if name in ("n_params"):
             return self.get_n_params()
         return object.__getattribute__(self, name)

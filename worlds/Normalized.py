@@ -15,22 +15,23 @@ class Normalized(World):
             all_rewards = []
             for t in trajs:
                 for o, a, r in t:
-                    assert len(r) == 1
-                    all_rewards.append(float(r[0]))
+                    all_rewards.append(float(r))
+            all_rewards = np.asarray(all_rewards)
 
             avg.update(np.mean(all_rewards))
-            var.update(np.mean(np.square(all_rewards - avg.get())))
-            std = np.sqrt(var.get())
+            avg_val = avg.get()
 
-            if std < 0.000001:
-                std = 1.0
+            var.update(np.mean(np.square(all_rewards - avg_val)))
+            stddev = np.sqrt(var.get())
+
+            if stddev < 0.000001:
+                stddev = 1.0
                 sys.stderr.write("Warning: all rewards are equal\n")
 
-            for t in trajs:
-                for o, a, r in t:
-                    r[0] = (r[0] - avg.get()) / std
-
-            return trajs
+            return [
+                [(o, a, (r - avg_val) / stddev) for o, a, r in t]
+                for t in trajs
+            ]
 
         self.trajectories = trajectories
 

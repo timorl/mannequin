@@ -11,6 +11,7 @@ if "DEBUG" in os.environ:
 
 from worlds import Mnist, Accuracy, PrintReward
 from models import BasicNet, Softmax
+from execute import policy_gradient
 from optimizers import Momentum
 
 def run():
@@ -28,8 +29,8 @@ def run():
 
     for _ in range(200):
         model.load_params(opt.get_value())
-        trajs = world.trajectories(model, 128)
-        grad = model.param_gradient(trajs)
+        trajs = world.trajectories(None, 128)
+        grad = policy_gradient(model, trajs)
         opt.apply_gradient(grad)
 
     test_world = Accuracy(Mnist(test=True))
