@@ -2,7 +2,7 @@
 from . import World
 
 class ActionNoise(World):
-    def __init__(self, inner, stddev):
+    def __init__(self, inner, *, stddev):
         self.trajectories = lambda agent, n: inner.trajectories(
             NoisyAgent(agent, stddev),
             n

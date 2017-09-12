@@ -2,7 +2,7 @@
 from . import World
 
 class Future(World):
-    def __init__(self, inner, horizon):
+    def __init__(self, inner, *, horizon):
         import numpy as np
 
         def process(traj):

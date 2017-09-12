@@ -4,7 +4,7 @@ from . import World
 class Mnist(World):
     data = None
 
-    def __init__(self, test=False):
+    def __init__(self, *, test=False):
         import numpy as np
 
         if Mnist.data == None:

@@ -2,7 +2,7 @@
 from . import World
 
 class Normalized(World):
-    def __init__(self, inner, running=0.0):
+    def __init__(self, inner, *, running=0.0):
         import sys
         import numpy as np
 

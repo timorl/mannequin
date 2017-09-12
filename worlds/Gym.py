@@ -2,7 +2,7 @@
 from . import World
 
 class Gym(World):
-    def __init__(self, env_name, max_steps=-1):
+    def __init__(self, env_name, *, max_steps=-1):
         import gym
         import gym.spaces
         import numpy as np

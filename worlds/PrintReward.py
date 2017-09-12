@@ -2,7 +2,8 @@
 from . import World
 
 class PrintReward(World):
-    def __init__(self, inner, max_value=None):
+    def __init__(self, inner, *,
+            max_value=None, label="Reward/episode:"):
         import sys
         import numpy as np
 
@@ -15,7 +16,7 @@ class PrintReward(World):
                     rew_sum += float(r)
             rew_sum /= len(trajs)
 
-            info = "Reward/episode: %10.2f" % rew_sum
+            info = "%s %10.2f" % (label, rew_sum)
 
             if max_value is not None:
                 bar = max(0.0, min(1.0, abs(rew_sum) / abs(max_value)))
