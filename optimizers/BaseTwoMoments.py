@@ -1,7 +1,7 @@
 
-from . import Optimizer
+from .BaseOptimizer import BaseOptimizer
 
-class BaseTwoMoments(Optimizer):
+class BaseTwoMoments(BaseOptimizer):
     def __init__(self, value, update_rule, *,
             mean_decay=0.9,
             var_decay=0.999,

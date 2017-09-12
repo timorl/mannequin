@@ -1,5 +1,5 @@
 
-class World(object):
+class BaseWorld(object):
     # Note: worlds are assumed to be thread-safe
     # (calls to trajectories() can be concurrent)
 

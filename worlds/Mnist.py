@@ -1,7 +1,7 @@
 
-from . import World
+from .BaseWorld import BaseWorld
 
-class Mnist(World):
+class Mnist(BaseWorld):
     data = None
 
     def __init__(self, *, test=False):

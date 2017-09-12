@@ -1,7 +1,7 @@
 
-from . import World
+from .BaseWorld import BaseWorld
 
-class EpisodeAvg(World):
+class EpisodeAvg(BaseWorld):
     def __init__(self, inner):
         import numpy as np
 

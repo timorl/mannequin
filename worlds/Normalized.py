@@ -1,7 +1,7 @@
 
-from . import World
+from .BaseWorld import BaseWorld
 
-class Normalized(World):
+class Normalized(BaseWorld):
     def __init__(self, inner, *, running=0.0):
         import sys
         import numpy as np

@@ -1,6 +1,4 @@
 
-from .World import World
-
 from .Accuracy import Accuracy
 from .ActionNoise import ActionNoise
 from .EpisodeAvg import EpisodeAvg

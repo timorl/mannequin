@@ -1,5 +1,5 @@
 
-class Model(object):
+class BaseModel(object):
     # Note: models are NOT assumed to be thread-safe
     # (calls can only be made from one thread at a time)
 

@@ -1,7 +1,7 @@
 
-from . import Model
+from .BaseModel import BaseModel
 
-class BaseTFModel(Model):
+class BaseTFModel(BaseModel):
     def build_output_tensor(self):
         raise NotImplementedError
 

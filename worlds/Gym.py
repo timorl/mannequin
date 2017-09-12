@@ -1,7 +1,7 @@
 
-from . import World
+from .BaseWorld import BaseWorld
 
-class Gym(World):
+class Gym(BaseWorld):
     def __init__(self, env_name, *, max_steps=-1):
         import gym
         import gym.spaces

@@ -1,8 +1,8 @@
 
-from . import World
+from .BaseWorld import BaseWorld
 from execute import retrace
 
-class Accuracy(World):
+class Accuracy(BaseWorld):
     def __init__(self, inner):
         import numpy as np
 

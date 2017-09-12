@@ -1,7 +1,7 @@
 
-from . import Optimizer
+from .BaseOptimizer import BaseOptimizer
 
-class Momentum(Optimizer):
+class Momentum(BaseOptimizer):
     def __init__(self, value, *, lr, decay=0.9, print_norm=False):
         import numpy as np
         import os

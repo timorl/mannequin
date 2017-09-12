@@ -1,5 +1,5 @@
 
-class Optimizer(object):
+class BaseOptimizer(object):
     # def __init__(self, value)
     #     ...
 

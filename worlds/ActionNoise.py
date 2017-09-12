@@ -1,7 +1,7 @@
 
-from . import World
+from .BaseWorld import BaseWorld
 
-class ActionNoise(World):
+class ActionNoise(BaseWorld):
     def __init__(self, inner, *, stddev):
         self.trajectories = lambda agent, n: inner.trajectories(
             ActionNoiseAgent(agent, stddev),

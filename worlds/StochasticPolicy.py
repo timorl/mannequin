@@ -1,7 +1,7 @@
 
-from . import World
+from .BaseWorld import BaseWorld
 
-class StochasticPolicy(World):
+class StochasticPolicy(BaseWorld):
     def __init__(self, inner):
         self.trajectories = lambda agent, n: inner.trajectories(
             StochasticPolicyAgent(agent),

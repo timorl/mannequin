@@ -1,7 +1,7 @@
 
-from worlds import World
+from worlds.BaseWorld import BaseWorld
 
-class Friedrich(World):
+class Friedrich(BaseWorld):
     def __init__(self, gaussCenterer):
         import numpy as np
 

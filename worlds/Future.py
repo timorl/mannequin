@@ -1,7 +1,7 @@
 
-from . import World
+from .BaseWorld import BaseWorld
 
-class Future(World):
+class Future(BaseWorld):
     def __init__(self, inner, *, horizon):
         import numpy as np
 

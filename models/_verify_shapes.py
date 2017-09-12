@@ -1,5 +1,5 @@
 
-from . import Model
+from .BaseModel import BaseModel
 
 def verify_shapes(model_cls):
     import numpy as np
@@ -68,7 +68,7 @@ def verify_shapes(model_cls):
         self.param_gradient = param_gradient
         self.step = step
 
-    class Verified(Model):
+    class Verified(BaseModel):
         __init__ = init
         __name__ = model_cls.__name__
         __qualname__ = model_cls.__qualname__

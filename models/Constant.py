@@ -1,9 +1,9 @@
 
-from . import Model
+from .BaseModel import BaseModel
 from ._verify_shapes import verify_shapes
 
 @verify_shapes
-class Constant(Model):
+class Constant(BaseModel):
     def __init__(self, *shape):
         import numpy as np
 

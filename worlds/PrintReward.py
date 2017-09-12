@@ -1,7 +1,7 @@
 
-from . import World
+from .BaseWorld import BaseWorld
 
-class PrintReward(World):
+class PrintReward(BaseWorld):
     def __init__(self, inner, *,
             max_value=None, label="Reward/episode:"):
         import sys

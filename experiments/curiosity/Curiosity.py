@@ -1,7 +1,7 @@
 
-from worlds import World
+from worlds.BaseWorld import BaseWorld
 
-class Curiosity(World):
+class Curiosity(BaseWorld):
     def __init__(self, inner, classifier):
         import numpy as np
 

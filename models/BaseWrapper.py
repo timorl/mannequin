@@ -1,7 +1,7 @@
 
-from . import Model
+from .BaseModel import BaseModel
 
-class BaseWrapper(Model):
+class BaseWrapper(BaseModel):
     def __init__(self, inner, **kwargs):
         self.get_input_shape = inner.get_input_shape
         self.get_output_shape = inner.get_output_shape
