@@ -1,5 +1,5 @@
 
-from . import World
+from worlds import World
 
 class Friedrich(World):
     def __init__(self, gaussCenterer):

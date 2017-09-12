@@ -1,5 +1,5 @@
 
-from . import World
+from worlds import World
 
 class Curiosity(World):
     def __init__(self, inner, classifier):

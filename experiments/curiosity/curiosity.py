@@ -1,16 +1,20 @@
 #!/usr/bin/python3
 
 import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from worlds import Accuracy, Normalized, Future, PrintReward, Friedrich, Curiosity
+sys.path.append("../..")
+
+from worlds import Accuracy, Normalized, Future, PrintReward
+from Friedrich import Friedrich
+from Curiosity import Curiosity
 from models import BasicNet, Softmax, Constant
 from optimizers import Adam
 from execute import policy_gradient
 
 if "DEBUG" in os.environ:
-    import sys
     import IPython.core.ultratb
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
@@ -20,8 +24,8 @@ def run():
 
     gaussCenterer = Constant((2,), (2,))
 
-    world = Friedrich.Friedrich(gaussCenterer)
-    curious = Curiosity.Curiosity(world, classifier)
+    world = Friedrich(gaussCenterer)
+    curious = Curiosity(world, classifier)
     curious = Normalized(curious)
 
     testWorld = PrintReward(Accuracy(world), max_value=100.)
@@ -34,8 +38,7 @@ def run():
     gaussOpt = Adam(
         [0,0],
         lr=0.05,
-        decay=0.2,
-        print_info=True
+        decay=0.2
     )
 
     plt.ion()
