@@ -12,7 +12,7 @@ if "DEBUG" in os.environ:
 from worlds import Gym, Normalized, Future, PrintReward
 from models import BasicNet, Softmax, RandomChoice
 from execute import policy_gradient
-from optimizers import Adam
+from optimizers import Adams
 
 def run():
     model = BasicNet(4, 64, "lrelu", 2)
@@ -28,11 +28,10 @@ def run():
         )
     )
 
-    opt = Adam(
+    opt = Adams(
         np.random.randn(model.n_params) * 0.1,
         lr=0.0001,
-        decay=0.8,
-        square=True
+        mean_decay=0.8
     )
 
     for _ in range(30):

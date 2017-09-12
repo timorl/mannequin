@@ -2,7 +2,7 @@
 from . import Optimizer
 
 class Momentum(Optimizer):
-    def __init__(self, value, lr, decay, print_info=False):
+    def __init__(self, value, *, lr, decay, print_info=False):
         import numpy as np
         import os
 

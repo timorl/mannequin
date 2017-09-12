@@ -33,12 +33,12 @@ def run():
     classOpt = Adam(
         np.random.randn(classifier.n_params) * 0.1,
         lr=0.5,
-        decay=0.99
+        mean_decay=0.99
     )
     gaussOpt = Adam(
         [0,0],
         lr=0.05,
-        decay=0.2
+        mean_decay=0.2
     )
 
     plt.ion()
