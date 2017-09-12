@@ -7,7 +7,11 @@ def verify_shapes(model_cls):
     def init(self, *args, **kwargs):
         inner = model_cls(*args, **kwargs)
 
-        inp_shape = tuple(max(1, int(d)) for d in inner.inp_shape)
+        if inner.inp_shape is None:
+            inp_shape = None
+        else:
+            inp_shape = tuple(max(1, int(d)) for d in inner.inp_shape)
+
         out_shape = tuple(max(1, int(d)) for d in inner.out_shape)
         n_params = int(inner.get_n_params())
 
@@ -24,8 +28,13 @@ def verify_shapes(model_cls):
             batch = len(states)
             assert batch >= 1
 
-            inputs = np.asarray(inputs)
-            assert inputs.shape == (batch,) + inp_shape
+            if inp_shape is None:
+                assert len(inputs) == batch
+                if inputs[0] is not None:
+                    inputs = [None] * batch
+            else:
+                inputs = np.asarray(inputs)
+                assert inputs.shape == (batch,) + inp_shape
 
             gradients = np.asarray(gradients)
             assert gradients.shape == (batch,) + out_shape
@@ -40,8 +49,13 @@ def verify_shapes(model_cls):
             batch = len(states)
             assert batch >= 1
 
-            inputs = np.asarray(inputs)
-            assert inputs.shape == (batch,) + inp_shape
+            if inp_shape is None:
+                assert len(inputs) == batch
+                if inputs[0] is not None:
+                    inputs = [None] * batch
+            else:
+                inputs = np.asarray(inputs)
+                assert inputs.shape == (batch,) + inp_shape
 
             states, outputs = inner.step(states, inputs)
             outputs = np.asarray(outputs)

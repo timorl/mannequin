@@ -3,7 +3,7 @@ from . import Optimizer
 
 class BaseTwoMoments(Optimizer):
     def __init__(self, value, update_rule, *,
-            mean_decay,
+            mean_decay=0.9,
             var_decay=0.999,
             print_info=False):
         import numpy as np

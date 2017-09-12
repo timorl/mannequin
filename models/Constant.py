@@ -4,24 +4,23 @@ from ._verify_shapes import verify_shapes
 
 @verify_shapes
 class Constant(Model):
-    def __init__(self, inp_shape, out_shape):
+    def __init__(self, *shape):
         import numpy as np
 
-        inp_shape = tuple(inp_shape)
-        out_shape = tuple(out_shape)
-        self.get_input_shape = lambda: inp_shape
-        self.get_output_shape = lambda: out_shape
-        self.get_n_params = lambda: np.prod(out_shape)
+        shape = tuple(max(1, int(d)) for d in shape)
+        self.get_input_shape = lambda: None
+        self.get_output_shape = lambda: shape
+        self.get_n_params = lambda: np.prod(shape)
 
         value = None
 
         def load_params(params):
             nonlocal value
-            value = np.array(params).reshape(out_shape)
+            value = np.array(params).reshape(shape)
 
         def param_gradient(states, inputs, output_gradients):
             output_gradients = np.array(output_gradients)
-            assert output_gradients.shape == (len(states),) + out_shape
+            assert output_gradients.shape == (len(states),) + shape
             return np.mean(output_gradients, axis=0).reshape(-1)
 
         def step(states, inputs):
