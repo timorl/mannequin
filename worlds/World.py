@@ -8,3 +8,6 @@ class World(object):
         # is a list of tuples (observation, action, reward),
         # and each tuple has types (ndarray, ndarray, float)
         raise NotImplementedError
+
+    def render(self, agent):
+        raise NotImplementedError

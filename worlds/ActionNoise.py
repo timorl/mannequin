@@ -4,13 +4,14 @@ from . import World
 class ActionNoise(World):
     def __init__(self, inner, *, stddev):
         self.trajectories = lambda agent, n: inner.trajectories(
-            NoisyAgent(agent, stddev),
+            ActionNoiseAgent(agent, stddev),
             n
         )
+        self.render = lambda a: inner.render(ActionNoiseAgent(a))
 
 from models.BaseWrapper import BaseWrapper
 
-class NoisyAgent(BaseWrapper):
+class ActionNoiseAgent(BaseWrapper):
     def __init__(self, inner, stddev):
         import numpy as np
 

@@ -15,3 +15,4 @@ class EpisodeAvg(World):
             return [process(t) for t in trajs]
 
         self.trajectories = trajectories
+        self.render = inner.render

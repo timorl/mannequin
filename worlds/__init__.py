@@ -9,3 +9,4 @@ from .Gym import Gym
 from .Mnist import Mnist
 from .Normalized import Normalized
 from .PrintReward import PrintReward
+from .StochasticPolicy import StochasticPolicy

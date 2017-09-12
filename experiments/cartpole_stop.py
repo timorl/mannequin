@@ -11,10 +11,10 @@ if "DEBUG" in os.environ:
     import IPython.core.ultratb
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
-from worlds import Gym, Normalized, Future, PrintReward
-from models import Input, Layer, Softmax, RandomChoice
+from worlds import Gym, Normalized, Future, PrintReward, StochasticPolicy
+from models import Input, Layer, Softmax
 from execute import policy_gradient
-from optimizers import Adams
+from optimizers import Adam
 
 def make_env():
     env = gym.make("CartPole-v1")
@@ -31,20 +31,19 @@ def run():
     model = Layer(model, 128, "lrelu")
     model = Layer(model, 2)
     model = Softmax(model)
-    model = RandomChoice(model)
 
-    world = Gym(make_env, max_steps=500)
+    world = StochasticPolicy(Gym(make_env, max_steps=500))
 
     train_world = Normalized(
         Future(
             PrintReward(world, max_value=5000.0),
-            horizon=50
+            horizon=500
         )
     )
 
-    opt = Adams(
+    opt = Adam(
         np.random.randn(model.n_params) * 0.1,
-        lr=0.00002
+        lr=0.01
     )
 
     for _ in range(50):

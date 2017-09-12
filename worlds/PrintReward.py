@@ -30,3 +30,4 @@ class PrintReward(World):
             return trajs
 
         self.trajectories = trajectories
+        self.render = inner.render

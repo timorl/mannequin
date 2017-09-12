@@ -34,6 +34,7 @@ class Normalized(World):
             ]
 
         self.trajectories = trajectories
+        self.render = inner.render
 
 class RunningMean(object):
     def __init__(self, decay):

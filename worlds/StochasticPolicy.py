@@ -1,9 +1,17 @@
 
-from .BaseWrapper import BaseWrapper
-from ._verify_shapes import verify_shapes
+from . import World
 
-@verify_shapes
-class RandomChoice(BaseWrapper):
+class StochasticPolicy(World):
+    def __init__(self, inner):
+        self.trajectories = lambda agent, n: inner.trajectories(
+            StochasticPolicyAgent(agent),
+            n
+        )
+        self.render = lambda a: inner.render(StochasticPolicyAgent(a))
+
+from models.BaseWrapper import BaseWrapper
+
+class StochasticPolicyAgent(BaseWrapper):
     def __init__(self, inner):
         import numpy as np
 

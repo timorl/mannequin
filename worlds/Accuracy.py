@@ -27,3 +27,4 @@ class Accuracy(World):
             ]
 
         self.trajectories = trajectories
+        self.render = inner.render
