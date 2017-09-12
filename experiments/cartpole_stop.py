@@ -12,7 +12,7 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Gym, Normalized, Future, PrintReward
-from models import BasicNet, Softmax, RandomChoice
+from models import Input, Layer, Softmax, RandomChoice
 from execute import policy_gradient
 from optimizers import Adams
 
@@ -27,7 +27,9 @@ def make_env():
     return env
 
 def run():
-    model = BasicNet(4, 128, "lrelu", 2)
+    model = Input(4)
+    model = Layer(model, 128, "lrelu")
+    model = Layer(model, 2)
     model = Softmax(model)
     model = RandomChoice(model)
 
@@ -42,7 +44,7 @@ def run():
 
     opt = Adams(
         np.random.randn(model.n_params) * 0.1,
-        lr=0.000005
+        lr=0.00002
     )
 
     for _ in range(50):

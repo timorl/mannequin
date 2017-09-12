@@ -10,7 +10,7 @@ sys.path.append("../..")
 from worlds import Accuracy, Normalized, Future, PrintReward
 from Friedrich import Friedrich
 from Curiosity import Curiosity
-from models import BasicNet, Softmax, Constant
+from models import Input, Layer, Softmax, Constant
 from optimizers import Adam
 from execute import policy_gradient
 
@@ -19,7 +19,9 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 def run():
-    classifier = BasicNet(2, 16, "lrelu", 2)
+    classifier = Input(2)
+    classifier = Layer(classifier, 16, "lrelu")
+    classifier = Layer(classifier, 2)
     classifier = Softmax(classifier)
 
     gaussCenterer = Constant(2)

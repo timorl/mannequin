@@ -10,12 +10,14 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Gym, Normalized, Future, PrintReward
-from models import BasicNet, Softmax, RandomChoice
+from models import Input, Layer, Softmax, RandomChoice
 from execute import policy_gradient
 from optimizers import Adams
 
 def run():
-    model = BasicNet(4, 64, "lrelu", 2)
+    model = Input(4)
+    model = Layer(model, 64, "lrelu")
+    model = Layer(model, 2)
     model = Softmax(model)
     model = RandomChoice(model)
 

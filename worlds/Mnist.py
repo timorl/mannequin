@@ -24,7 +24,7 @@ class Mnist(World):
 
             inputs, labels = data.next_batch(n)
             return [
-                [(i, l, 1.0)]
+                [(i.reshape(28, 28), l, 1.0)]
                 for i, l in zip(inputs, labels)
             ]
 

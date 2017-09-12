@@ -2,7 +2,7 @@
 from . import Optimizer
 
 class Momentum(Optimizer):
-    def __init__(self, value, *, lr, decay, print_info=False):
+    def __init__(self, value, *, lr, decay=0.9, print_norm=False):
         import numpy as np
         import os
 
@@ -26,7 +26,7 @@ class Momentum(Optimizer):
             running_mean = running_mean * decay + grad * (1.0 - decay)
             update = lr * running_mean
 
-            if print_info:
+            if print_norm:
                 print("Update norm: %10.4f" % norm(update))
 
             value = value + update

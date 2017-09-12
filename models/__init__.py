@@ -1,7 +1,8 @@
 
 from .Model import Model
 
+from .Layer import Layer
 from .Constant import Constant
-from .BasicNet import BasicNet
+from .Input import Input
 from .RandomChoice import RandomChoice
 from .Softmax import Softmax

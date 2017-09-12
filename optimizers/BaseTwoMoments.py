@@ -5,7 +5,7 @@ class BaseTwoMoments(Optimizer):
     def __init__(self, value, update_rule, *,
             mean_decay=0.9,
             var_decay=0.999,
-            print_info=False):
+            print_norm=False):
         import numpy as np
         import os
 
@@ -29,7 +29,7 @@ class BaseTwoMoments(Optimizer):
 
             add = update_rule(running_mean.get(), running_var.get())
 
-            if print_info:
+            if print_norm:
                 print("Update norm: %10.4f" % norm(add))
 
             value = value + add

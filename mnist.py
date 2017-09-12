@@ -10,12 +10,14 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Mnist, Accuracy, PrintReward
-from models import BasicNet, Softmax
+from models import Input, Layer, Softmax
 from execute import policy_gradient
 from optimizers import Momentum
 
 def run():
-    model = BasicNet(28*28, 128, "lrelu", 10)
+    model = Input(28, 28)
+    model = Layer(model, 128, "lrelu")
+    model = Layer(model, 10)
     model = Softmax(model)
 
     world = Mnist()
@@ -23,11 +25,10 @@ def run():
     opt = Momentum(
         np.random.randn(model.n_params),
         lr=300.0,
-        decay=0.9,
-        print_info=True
+        print_norm=True
     )
 
-    for _ in range(200):
+    for i in range(200):
         model.load_params(opt.get_value())
         trajs = world.trajectories(None, 128)
         grad = policy_gradient(model, trajs)
