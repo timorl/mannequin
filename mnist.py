@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
 import os
+import sys
 import numpy as np
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 if "DEBUG" in os.environ:
-    import sys
     import IPython.core.ultratb
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 

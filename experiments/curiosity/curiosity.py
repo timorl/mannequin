@@ -22,7 +22,7 @@ def run():
     classifier = BasicNet(2, 16, "lrelu", 2)
     classifier = Softmax(classifier)
 
-    gaussCenterer = Constant((2,), (2,))
+    gaussCenterer = Constant(2)
 
     world = Friedrich(gaussCenterer)
     curious = Curiosity(world, classifier)

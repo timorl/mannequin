@@ -8,7 +8,7 @@ class Gym(World):
         import numpy as np
         import threading
 
-        free_envs = [gym.make(str(env_name))]
+        free_envs = []
         lock = threading.Lock()
 
         def get_env():
@@ -16,12 +16,17 @@ class Gym(World):
                 if len(free_envs) >= 1:
                     return free_envs.pop()
 
-            return gym.make(str(env_name))
+            if callable(env_name):
+                return env_name()
+            else:
+                return gym.make(str(env_name))
 
         def return_env(e):
             with lock:
                 free_envs.append(e)
 
+        # Build one copy of the environment just to check shapes
+        return_env(get_env())
         obs_space = free_envs[0].observation_space
         act_space = free_envs[0].action_space
 

@@ -18,12 +18,12 @@ class PrintReward(World):
             info = "Reward/episode: %10.2f" % rew_sum
 
             if max_value is not None:
-                bar = max(-1.0, min(1.0, rew_sum / max_value))
+                bar = max(0.0, min(1.0, abs(rew_sum) / abs(max_value)))
                 bar = int(round(bar * 50.0))
-                if bar >= 0.0:
+                if rew_sum >= 0.0:
                     info += " [" + "+" * bar + " " * (50 - bar) + "]"
                 else:
-                    info += " [" + " " * (50 + bar) + "-" * -bar + "]"
+                    info += " [" + " " * (50 - bar) + "-" * bar + "]"
 
             print(info)
             return trajs
