@@ -93,24 +93,27 @@ class Gym(BaseWorld):
 
             return trajs
 
+        render_env = None
+
         def render(agent):
-            env = get_env()
-            env.render()
+            nonlocal render_env
+
+            if render_env is None:
+                render_env = get_env()
+            render_env.render()
 
             sta = [None]
-            obs = process_obs(env.reset())
+            obs = process_obs(render_env.reset())
             done = False
             n_steps = 0
             while not done:
                 sta, act = agent.step(sta, [obs])
-                obs, rew, done, _ = env.step(process_action(act[0]))
-                env.render()
+                obs, rew, done, _ = render_env.step(process_action(act[0]))
+                render_env.render()
 
                 n_steps += 1
                 if n_steps == max_steps:
                     break
-
-            return_env(env)
 
         self.trajectories = trajectories
         self.render = render
