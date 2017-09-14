@@ -12,7 +12,7 @@ if "DEBUG" in os.environ:
 
 from worlds import Mnist
 from models import Constant
-from execute import policy_gradient
+from trajectories import policy_gradient
 from optimizers import Momentum
 
 def run():
@@ -22,13 +22,13 @@ def run():
     opt = Momentum(
         np.random.randn(model.n_params),
         lr=0.05,
-        decay=0.9
+        memory=0.9
     )
 
     for _ in range(100):
         model.load_params(opt.get_value())
         trajs = world.trajectories(None, 128)
-        grad = policy_gradient(model, trajs)
+        grad = policy_gradient(trajs, policy=model)
         opt.apply_gradient(grad)
         print(np.round(opt.get_value(), 2))
 

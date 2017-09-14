@@ -10,9 +10,9 @@ if "DEBUG" in os.environ:
     import IPython.core.ultratb
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
-from worlds import Mnist, Accuracy, PrintReward, StochasticPolicy
+from worlds import Mnist, Accuracy, StochasticPolicy
 from models import Input, Layer, Softmax
-from execute import policy_gradient
+from trajectories import policy_gradient, print_reward
 from optimizers import Adams
 
 def run():
@@ -21,20 +21,19 @@ def run():
     model = Layer(model, 10)
     model = Softmax(model)
 
-    train_world = PrintReward(
-        StochasticPolicy(Accuracy(Mnist())),
-        max_value=100.0
-    )
+    train_world = StochasticPolicy(Accuracy(Mnist()))
 
     opt = Adams(
         np.random.randn(model.n_params),
-        lr=0.00005
+        lr=0.00002,
+        memory=0.99
     )
 
     for i in range(600):
         model.load_params(opt.get_value())
         trajs = train_world.trajectories(model, 128)
-        grad = policy_gradient(model, trajs)
+        print_reward(trajs, max_value=1)
+        grad = policy_gradient(trajs, policy=model)
         opt.apply_gradient(grad)
 
 if __name__ == "__main__":

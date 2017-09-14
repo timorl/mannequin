@@ -3,8 +3,8 @@ from .BaseOptimizer import BaseOptimizer
 
 class BaseTwoMoments(BaseOptimizer):
     def __init__(self, value, update_rule, *,
-            mean_decay=0.9,
-            var_decay=0.999,
+            memory=0.9,
+            var_memory=0.999,
             print_norm=False):
         import numpy as np
         import os
@@ -12,8 +12,8 @@ class BaseTwoMoments(BaseOptimizer):
         value = np.asarray(value, dtype=np.float32)
         value.setflags(write=False)
 
-        running_mean = RunningMean(mean_decay)
-        running_var = RunningMean(var_decay)
+        running_mean = RunningMean(memory)
+        running_var = RunningMean(var_memory)
 
         def norm(v):
             return np.sqrt(np.sum(np.square(v)))

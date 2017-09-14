@@ -2,7 +2,7 @@
 from .BaseOptimizer import BaseOptimizer
 
 class Momentum(BaseOptimizer):
-    def __init__(self, value, *, lr, decay=0.9, print_norm=False):
+    def __init__(self, value, *, lr, memory=0.9, print_norm=False):
         import numpy as np
         import os
 
@@ -23,7 +23,7 @@ class Momentum(BaseOptimizer):
             grad = np.asarray(grad)
             assert grad.shape == value.shape
 
-            running_mean = running_mean * decay + grad * (1.0 - decay)
+            running_mean = running_mean * memory + grad * (1.0 - memory)
             update = lr * running_mean
 
             if print_norm:

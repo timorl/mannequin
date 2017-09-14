@@ -25,7 +25,7 @@ def run():
     opt = Adams(
         np.random.randn(model.n_params) * 0.1,
         lr=0.0001,
-        mean_decay=0.8
+        memory=0.8
     )
 
     for _ in range(20):
