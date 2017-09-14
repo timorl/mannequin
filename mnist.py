@@ -9,9 +9,9 @@ if "DEBUG" in os.environ:
     import IPython.core.ultratb
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
-from worlds import Mnist, Accuracy, PrintReward
+from worlds import Mnist
 from models import Input, Layer, Conv2d, Maxpool, Softmax
-from execute import policy_gradient
+from trajectories import policy_gradient, accuracy, print_reward
 from optimizers import Adam
 
 def run():
@@ -26,12 +26,6 @@ def run():
 
     world = Mnist()
 
-    test_world = PrintReward(
-        Accuracy(Mnist(test=True)),
-        max_value=100.0,
-        label="Accuracy on test:"
-    )
-
     opt = Adam(
         np.random.randn(model.n_params),
         lr=0.1
@@ -40,11 +34,16 @@ def run():
     for i in range(600):
         model.load_params(opt.get_value())
         trajs = world.trajectories(None, 128)
-        grad = policy_gradient(model, trajs)
+        grad = policy_gradient(trajs, policy=model)
         opt.apply_gradient(grad)
 
-        if i % 10 == 9:
-            test_world.trajectories(model, 1000)
+        trajs = accuracy(trajs, model=model, percent=True)
+        print_reward(trajs, max_value=100, label="Train accuracy:")
+
+    print()
+    trajs = Mnist(test=True).trajectories(None, 5000)
+    trajs = accuracy(trajs, model=model, percent=True)
+    print_reward(trajs, max_value=100, label="Test accuracy: ")
 
 if __name__ == "__main__":
     run()

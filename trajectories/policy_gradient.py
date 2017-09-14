@@ -1,30 +1,30 @@
 
-from . import retrace
+from .retrace import retrace
 
-def policy_gradient(model, trajs):
+def policy_gradient(trajs, *, policy):
     import numpy as np
 
     learn_states = []
     learn_inps = []
     learn_grads = []
 
-    for traj, model_traj in zip(trajs, retrace(model, trajs)):
+    for traj, policy_traj in zip(trajs, retrace(trajs, model=policy)):
         # Unpack trajectories to vertical arrays
         inps, real_outs, rews = zip(*traj)
-        states, model_outs = zip(*model_traj)
+        states, policy_outs = zip(*policy_traj)
 
         # Verify array shapes
         real_outs = np.asarray(real_outs)
-        model_outs = np.asarray(model_outs)
-        assert model_outs.shape == real_outs.shape
+        policy_outs = np.asarray(policy_outs)
+        assert policy_outs.shape == real_outs.shape
         rews = np.asarray(rews)
         assert rews.shape == (len(rews),)
 
         # True off-policy version of REINFORCE (!!!)
-        grads = np.multiply((real_outs - model_outs).T, rews.T).T
+        grads = np.multiply((real_outs - policy_outs).T, rews.T).T
 
         learn_states += states
         learn_inps += inps
         learn_grads += list(grads)
 
-    return model.param_gradient(learn_states, learn_inps, learn_grads)
+    return policy.param_gradient(learn_states, learn_inps, learn_grads)

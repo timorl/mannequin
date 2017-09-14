@@ -1,5 +1,5 @@
 
-def retrace(model, trajs, *, max_steps=-1):
+def retrace(trajs, *, model, max_steps=-1):
     import numpy as np
 
     results = [[] for _ in trajs]
