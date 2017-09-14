@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 
 sys.path.append("../..")
 
-from Friedrich import Friedrich
-from Curiosity import Curiosity
 from models import Input, Layer, Softmax, Constant
 from optimizers import Adam
 from trajectories import policy_gradient, normalize, discount, print_reward, accuracy
