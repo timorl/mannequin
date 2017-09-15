@@ -18,7 +18,7 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 def convert_traj(traj, pred, class_id):
-    result = [(o, a, p[class_id]) for (o, a, _), (_, p) in zip(traj,pred)]
+    result = [(o, a, p[class_id]+1+r) for (o, a, r), (_, p) in zip(traj,pred)]
     return result
 
 def learn_from_classifier(classifier, trajs, class_id):
@@ -89,7 +89,7 @@ def run():
             plot_tagged_trajs(trajsForClass)
             accTrajs = accuracy(trajsForClass, model=classifier)
             accTrajs = episode_accumulate_reward(accTrajs, np.mean)
-            print_reward(accTrajs, max_value=1.0, reward_accumulator=np.mean)
+            print_reward(accTrajs, max_value=1.0, reward_accumulator=np.mean, label="Cla reward: ")
             accs = [traj[0][2] for traj in accTrajs]
             curAccuracy = np.mean(accs)
             if curAccuracy > 1.-i/400:
@@ -98,6 +98,7 @@ def run():
             grad = policy_gradient(trajsForClass, policy=classifier)
             classOpt.apply_gradient(grad)
             trajs2 = learn_from_classifier(classifier, trajs[50:], 1)
+            print_reward(trajs2, max_value=2.0, reward_accumulator=np.max,label="Car reward: ")
             trajs2 = episode_accumulate_reward(trajs2, accumulator=np.max)
             trajs2 = normalize(trajs2)
             grad2 = policy_gradient(trajs2, policy=curCarr)
