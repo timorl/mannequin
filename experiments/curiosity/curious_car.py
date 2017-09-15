@@ -98,7 +98,7 @@ def run():
             grad = policy_gradient(trajsForClass, policy=classifier)
             classOpt.apply_gradient(grad)
             trajs2 = learn_from_classifier(classifier, trajs[50:], 1)
-            trajs2 = discount(trajs2, horizon=100.)
+            trajs2 = episode_accumulate_reward(trajs2, accumulator=np.max)
             trajs2 = normalize(trajs2)
             grad2 = policy_gradient(trajs2, policy=curCarr)
             carrOpt.apply_gradient(grad2)
