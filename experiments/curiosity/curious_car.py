@@ -18,7 +18,8 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 def convert_traj(traj, pred, class_id):
-    result = [(o, a, p[class_id]+1+r) for (o, a, r), (_, p) in zip(traj,pred)]
+    r = 1.-(len(traj)-100.)/100.
+    result = [(o, a, p[class_id]*0.1 + r*0.9) for (o, a, _), (_, p) in zip(traj,pred)]
     return result
 
 def learn_from_classifier(classifier, trajs, class_id):
@@ -39,8 +40,8 @@ def plot_tagged_trajs(trajs):
     plt.ion()
     plt.clf()
     plt.grid()
-    plt.gcf().axes[0].set_ylim([-0.2,0.2])
-    plt.gcf().axes[0].set_xlim([-1.5,1.5])
+    plt.gcf().axes[0].set_ylim([-0.075,0.075])
+    plt.gcf().axes[0].set_xlim([-1.25,0.5])
     for traj in trajs:
         tag = traj[0][1]
         xs, ys = [], []
@@ -62,7 +63,7 @@ def run():
     carrs = [carr()]
     carrs[0].load_params(np.random.randn(carrs[0].n_params))
 
-    def train_one():
+    def train_one(carrOpt):
         curCarr = carr()
         carrs.append(curCarr)
         classOpt = Adam(
@@ -70,11 +71,13 @@ def run():
             lr=0.5,
             memory=0.9,
         )
-        carrOpt = Adam(
-            np.random.randn(curCarr.n_params),
-            lr=0.10,
-            memory=0.5,
-        )
+        if carrOpt == None:
+            carrOpt = Adam(
+                np.random.randn(curCarr.n_params),
+                lr=0.10,
+                memory=0.5,
+            )
+        curScore = 0.
         curAccuracy = 0.
         for i in range(200):
             classifier.load_params(classOpt.get_value())
@@ -98,17 +101,24 @@ def run():
             grad = policy_gradient(trajsForClass, policy=classifier)
             classOpt.apply_gradient(grad)
             trajs2 = learn_from_classifier(classifier, trajs[50:], 1)
-            print_reward(trajs2, max_value=2.0, reward_accumulator=np.max,label="Car reward: ")
+            print_reward(trajs2, max_value=1.0, reward_accumulator=np.max,label="Car reward: ")
             trajs2 = episode_accumulate_reward(trajs2, accumulator=np.max)
+            scores = [traj[0][2] for traj in trajs2]
+            curScore = np.mean(scores)
             trajs2 = normalize(trajs2)
             grad2 = policy_gradient(trajs2, policy=curCarr)
             carrOpt.apply_gradient(grad2)
             if i % 10 == 0:
                 print("%d episodes in."%i)
         world.render(curCarr)
+        if curScore > 0.11:
+            return carrOpt
+        else:
+            return None
+    theCarOpt = None
     for i in range(10):
         print("Teaching agent %d."%i)
-        train_one()
+        theCarOpt = train_one(theCarOpt)
 
 if __name__ == "__main__":
     run()
