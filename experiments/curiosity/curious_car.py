@@ -31,6 +31,25 @@ def carr():
     carr = Layer(carr, 3)
     return Softmax(carr)
 
+def tag_traj(traj, tag):
+    return [(t[0], tag, 1.) for t in traj]
+
+def plot_tagged_trajs(trajs):
+    COLORS = ["blue", "red", "green"]
+    plt.ion()
+    plt.clf()
+    plt.grid()
+    plt.gcf().axes[0].set_ylim([-0.2,0.2])
+    plt.gcf().axes[0].set_xlim([-1.5,1.5])
+    for traj in trajs:
+        tag = traj[0][1]
+        xs, ys = [], []
+        for (x,y), _, _ in traj:
+            xs.append(x)
+            ys.append(y)
+        plt.plot(xs, ys, color=COLORS[np.argmax(tag)])
+    plt.pause(0.01)
+
 def run():
     classifier = Input(2)
     classifier = Layer(classifier, 16, "lrelu")
@@ -56,21 +75,25 @@ def run():
             lr=0.10,
             memory=0.5,
         )
-        for i in range(50):
+        curAccuracy = 0.
+        for i in range(200):
             classifier.load_params(classOpt.get_value())
             curCarr.load_params(carrOpt.get_value())
 
             trajs = []
-            for jimmy in np.random.choice(carrs[:-1], size=5):
-                trajs += world.trajectories(jimmy, 10)
+            for jimmy in np.random.choice(carrs[:-1], size=50):
+                trajs += world.trajectories(jimmy, 1)
             trajs += world.trajectories(curCarr, 50)
-            def tag_traj(traj, tag):
-                return [(t[0], tag, 1.) for t in traj]
             trajsForClass = [tag_traj(traj, [1,0]) for traj in trajs[:50]]
             trajsForClass += [tag_traj(traj, [0,1]) for traj in trajs[50:]]
+            plot_tagged_trajs(trajsForClass)
             accTrajs = accuracy(trajsForClass, model=classifier)
             accTrajs = episode_avg(accTrajs)
             print_reward(accTrajs, max_value=1.0, reward_accumulator=episode_avg)
+            accs = [traj[0][2] for traj in accTrajs]
+            curAccuracy = np.mean(accs)
+            if curAccuracy > 1.-i/400:
+                break
 
             grad = policy_gradient(trajsForClass, policy=classifier)
             classOpt.apply_gradient(grad)
@@ -80,7 +103,7 @@ def run():
             grad2 = policy_gradient(trajs2, policy=curCarr)
             carrOpt.apply_gradient(grad2)
             if i % 10 == 0:
-                world.render(curCarr)
+                print("%d episodes in."%i)
         world.render(curCarr)
     for i in range(10):
         print("Teaching agent %d."%i)
