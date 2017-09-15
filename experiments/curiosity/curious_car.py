@@ -70,7 +70,7 @@ def run():
             trajsForClass += [tag_traj(traj, [0,1]) for traj in trajs[50:]]
             accTrajs = accuracy(trajsForClass, model=classifier)
             accTrajs = episode_avg(accTrajs)
-            print_reward(accTrajs, max_value=200.0)
+            print_reward(accTrajs, max_value=1.0, reward_accumulator=episode_avg)
 
             grad = policy_gradient(trajsForClass, policy=classifier)
             classOpt.apply_gradient(grad)
