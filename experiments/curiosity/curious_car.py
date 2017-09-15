@@ -10,7 +10,7 @@ sys.path.append("../..")
 from worlds import Gym, StochasticPolicy
 from models import Input, Layer, Softmax, Constant
 from optimizers import Adam
-from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, retrace, episode_avg
+from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, retrace, episode_accumulate_reward
 
 if "DEBUG" in os.environ:
     import sys
@@ -88,8 +88,8 @@ def run():
             trajsForClass += [tag_traj(traj, [0,1]) for traj in trajs[50:]]
             plot_tagged_trajs(trajsForClass)
             accTrajs = accuracy(trajsForClass, model=classifier)
-            accTrajs = episode_avg(accTrajs)
-            print_reward(accTrajs, max_value=1.0, reward_accumulator=episode_avg)
+            accTrajs = episode_accumulate_reward(accTrajs, np.mean)
+            print_reward(accTrajs, max_value=1.0, reward_accumulator=np.mean)
             accs = [traj[0][2] for traj in accTrajs]
             curAccuracy = np.mean(accs)
             if curAccuracy > 1.-i/400:
