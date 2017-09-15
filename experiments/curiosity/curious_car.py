@@ -18,8 +18,11 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 def convert_traj(traj, pred, class_id):
-    r = 1.-(len(traj)-100.)/100.
-    result = [(o, a, p[class_id]*0.1 + r*0.9) for (o, a, _), (_, p) in zip(traj,pred)]
+    r = 1.+(110.-len(traj))/90.
+    if r < 0.1:
+        result = [(o, a, p[class_id]*0.1 + r*0.9) for (o, a, _), (_, p) in zip(traj,pred)]
+    else:
+        result = [(o, a, r) for (o, a, _) in traj]
     return result
 
 def learn_from_classifier(classifier, trajs, class_id):
@@ -60,12 +63,12 @@ def run():
     world = Gym("MountainCar-v0")
     world = StochasticPolicy(world)
 
-    carrs = [carr()]
-    carrs[0].load_params(np.random.randn(carrs[0].n_params))
+    curCarr = carr()
+    curCarr.load_params(np.random.randn(curCarr.n_params))
+    oldTrajs = world.trajectories(curCarr, 800)
 
     def train_one(carrOpt):
-        curCarr = carr()
-        carrs.append(curCarr)
+        nonlocal oldTrajs
         classOpt = Adam(
             np.random.randn(classifier.n_params) * 1.,
             lr=0.5,
@@ -79,13 +82,12 @@ def run():
             )
         curScore = 0.
         curAccuracy = 0.
-        for i in range(200):
+        for i in range(250):
             classifier.load_params(classOpt.get_value())
             curCarr.load_params(carrOpt.get_value())
 
-            trajs = []
-            for jimmy in np.random.choice(carrs[:-1], size=50):
-                trajs += world.trajectories(jimmy, 1)
+            oldTrajIdx = np.random.choice(len(oldTrajs), size=50)
+            trajs = [oldTrajs[i] for i in oldTrajIdx]
             trajs += world.trajectories(curCarr, 50)
             trajsForClass = [tag_traj(traj, [1,0]) for traj in trajs[:50]]
             trajsForClass += [tag_traj(traj, [0,1]) for traj in trajs[50:]]
@@ -95,7 +97,7 @@ def run():
             print_reward(accTrajs, max_value=1.0, reward_accumulator=np.mean, label="Cla reward: ")
             accs = [traj[0][2] for traj in accTrajs]
             curAccuracy = np.mean(accs)
-            if curAccuracy > 1.-i/400:
+            if curAccuracy > 1.-i/500:
                 break
 
             grad = policy_gradient(trajsForClass, policy=classifier)
@@ -110,6 +112,7 @@ def run():
             carrOpt.apply_gradient(grad2)
             if i % 10 == 0:
                 print("%d episodes in."%i)
+        oldTrajs += world.trajectories(curCarr, 800)
         world.render(curCarr)
         if curScore > 0.11:
             return carrOpt
