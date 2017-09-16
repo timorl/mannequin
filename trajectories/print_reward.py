@@ -9,7 +9,7 @@ def print_reward(trajs, *,
     if episode is None:
         episode = np.sum
 
-    avg = get_reward(trajs, episode=np.sum, episodes=np.mean)
+    avg = get_reward(trajs, episode=episode, episodes=np.mean)
 
     info = "%s %10.2f" % (label, avg)
     bar = max(0.0, min(1.0, abs(avg) / abs(max_value)))

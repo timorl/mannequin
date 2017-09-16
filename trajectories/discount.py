@@ -14,4 +14,4 @@ def discount(trajs, *, horizon):
 
         return list(reversed(reversed_out))
 
-    return process_rewards(trajs, process=process)
+    return process_rewards(trajs, episode=process)
