@@ -1,10 +1,15 @@
 
-from .episode_sum import episode_sum
+from .get_reward import get_reward
 
-def print_reward(trajs, *, max_value, label="Reward/episode:"):
+def print_reward(trajs, *,
+        max_value, label="Reward/episode:",
+        episode=None):
     import numpy as np
 
-    avg = np.mean([t[0][2] for t in episode_sum(trajs)])
+    if episode is None:
+        episode = np.sum
+
+    avg = get_reward(trajs, episode=np.sum, episodes=np.mean)
 
     info = "%s %10.2f" % (label, avg)
     bar = max(0.0, min(1.0, abs(avg) / abs(max_value)))

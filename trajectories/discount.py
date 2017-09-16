@@ -1,17 +1,17 @@
 
-def discount(trajs, *, horizon):
-    import numpy as np
+from .process_rewards import process_rewards
 
+def discount(trajs, *, horizon):
     multiplier = 1.0 - (1.0 / horizon)
 
-    def process(traj):
+    def process(rew):
         rew_sum = 0.0
         reversed_out = []
 
-        for o, a, r in reversed(traj):
+        for r in reversed(rew):
             rew_sum = rew_sum * multiplier + float(r)
-            reversed_out.append((o, a, rew_sum))
+            reversed_out.append(rew_sum)
 
         return list(reversed(reversed_out))
 
-    return [process(t) for t in trajs]
+    return process_rewards(trajs, process=process)
