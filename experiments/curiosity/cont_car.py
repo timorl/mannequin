@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 sys.path.append("../..")
 
-from worlds import Gym, StochasticPolicy, BaseWorld
+from worlds import Gym, StochasticPolicy, BaseWorld, ActionNoise
 from models import Input, Layer, Softmax, Constant
 from optimizers import Adam
 from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, retrace, get_reward, process_rewards
@@ -18,13 +18,9 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 class Curiosity(BaseWorld.BaseWorld):
-    def __init__(self, inner, *, classifier, initial_agent, history_length, plot=False):
-        history = inner.trajectories(initial_agent, history_length)
-        classOpt = Adam(
-            np.random.randn(classifier.n_params) * 1.,
-            lr=0.5,
-            memory=0.9,
-        )
+    def __init__(self, inner, *, classifier, history_length, plot=False):
+        history = []
+        classOpt = None
 
         def tag_traj(traj, tag):
             return [(t[0], tag, 1.) for t in traj]
@@ -45,8 +41,8 @@ class Curiosity(BaseWorld.BaseWorld):
                 plt.plot(xs, ys, color=COLORS[np.argmax(tag)])
             plt.pause(0.01)
 
-        def trained_agent(agent):
-            nonlocal history
+        def remember_agent(agent):
+            nonlocal history, classOpt
             history += inner.trajectories(agent, history_length)
             classOpt = Adam(
                 np.random.randn(classifier.n_params) * 1.,
@@ -55,7 +51,9 @@ class Curiosity(BaseWorld.BaseWorld):
             )
 
         def trajectories(agent, n):
-            nonlocal history, classOpt
+            if classOpt is None:
+                remember_agent(agent)
+
             classifier.load_params(classOpt.get_value())
             historyIdx = np.random.choice(len(history), size=n)
             innerTrajs = [history[i] for i in historyIdx]
@@ -74,31 +72,9 @@ class Curiosity(BaseWorld.BaseWorld):
 
         self.trajectories = trajectories
         self.render = inner.render
-        self.trained_agent = trained_agent
+        self.remember_agent = remember_agent
 
 from models.BaseWrapper import BaseWrapper
-
-class SlightlyGaussianAgent(BaseWrapper):
-    def __init__(self, inner):
-        import numpy as np
-
-        rng = np.random.RandomState()
-
-        def smear(v):
-            assert v.shape == (1,)
-            v[0] = v[0]+np.random.randn()*0.1
-            return v
-
-        def step(states, inputs):
-            states, outputs = inner.step(states, inputs)
-            outputs = np.array(outputs)
-
-            for i in range(len(outputs)):
-                outputs[i] = smear(outputs[i])
-
-            return states, outputs
-
-        super().__init__(inner, step=step)
 
 def combine_rewards(trajss, weights):
     assert len(trajss) == len(weights)
@@ -114,7 +90,7 @@ def carr():
     carr = Input(2)
     carr = Layer(carr, 32, "lrelu")
     carr = Layer(carr, 1)
-    return SlightlyGaussianAgent(carr)
+    return carr
 
 def run():
     classifier = Input(2)
@@ -126,10 +102,10 @@ def run():
     curCarr.load_params(np.random.randn(curCarr.n_params))
 
     world = Gym("MountainCarContinuous-v0", max_steps=500)
+    world = ActionNoise(world, stddev=0.1)
     world = Curiosity(
                 world,
                 classifier=classifier,
-                initial_agent=curCarr,
                 history_length=800,
                 plot=True
             )
@@ -171,7 +147,7 @@ def run():
             carrOpt.apply_gradient(grad)
             if i % 10 == 0:
                 print("%d episodes in."%i)
-        world.trained_agent(curCarr)
+        world.remember_agent(curCarr)
         world.render(curCarr)
         if curScore > 0.01:
             return carrOpt
