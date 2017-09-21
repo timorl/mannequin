@@ -1,5 +1,5 @@
 
-from .process_rewards import process_rewards
+from .replace_rewards import replace_rewards
 
 def discount(trajs, *, horizon):
     multiplier = 1.0 - (1.0 / horizon)
@@ -14,4 +14,4 @@ def discount(trajs, *, horizon):
 
         return list(reversed(reversed_out))
 
-    return process_rewards(trajs, episode=process)
+    return replace_rewards(trajs, episode=process)

@@ -1,5 +1,7 @@
 
-def retrace(trajs, *, model, max_steps=-1):
+def retrace(trajs, *, model,
+        max_steps=-1,
+        with_states=False):
     import numpy as np
 
     results = [[] for _ in trajs]
@@ -21,7 +23,7 @@ def retrace(trajs, *, model, max_steps=-1):
 
         # Save outputs in a way that matches shapes of trajectories
         for n, s, o in zip(pick, pick_states, model_outs):
-            results[n].append((s, o))
+            results[n].append((s, o) if with_states else o)
             states[n] = s
 
         step += 1

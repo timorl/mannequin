@@ -10,7 +10,7 @@ sys.path.append("../..")
 from worlds import Gym, StochasticPolicy, BaseWorld, ActionNoise
 from models import Input, Layer, Softmax, Constant
 from optimizers import Adam
-from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, retrace, get_reward, process_rewards
+from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, retrace, get_rewards, replace_rewards
 
 if "DEBUG" in os.environ:
     import sys
@@ -67,7 +67,7 @@ class Curiosity(BaseWorld.BaseWorld):
 
             innerTrajs = innerTrajs[n:]
             preds = retrace(innerTrajs, model=classifier)
-            curiosityTrajs = [[(o, a, p) for (o, a, _), (_, (_, p)) in zip(innerTraj, pred)] for innerTraj, pred in zip(innerTrajs, preds)]
+            curiosityTrajs = [[(o, a, p) for (o, a, _), (_, p) in zip(innerTraj, pred)] for innerTraj, pred in zip(innerTrajs, preds)]
             return innerTrajs, curiosityTrajs
 
         self.trajectories = trajectories
@@ -122,10 +122,10 @@ def run():
             curCarr.load_params(carrOpt.get_value())
 
             realTrajs, curiosityTrajs = world.trajectories(curCarr, 50)
-            curScore = get_reward(realTrajs, episode=np.sum, episodes=np.mean)/90.
+            curScore = np.mean(get_rewards(realTrajs, episode=np.sum))/90.
             print_reward(realTrajs, max_value=90.0, episode=np.sum, label="Real reward:      ")
             print_reward(curiosityTrajs, max_value=1.0, episode=np.max, label="Curiosity reward: ")
-            curCuriosity = get_reward(curiosityTrajs, episode=np.max, episodes=np.mean)
+            curCuriosity = np.mean(get_rewards(curiosityTrajs, episode=np.max))
             if curCuriosity > 0.98:
                 if nextBreak == 0:
                     break
@@ -134,9 +134,9 @@ def run():
             else:
                 nextBreak = np.min([nextBreak+1, 5])
 
-            realTrajs = process_rewards(realTrajs, episode=np.sum)
+            realTrajs = replace_rewards(realTrajs, episode=np.sum)
             realTrajs = normalize(realTrajs)
-            curiosityTrajs = process_rewards(curiosityTrajs, episode=np.max)
+            curiosityTrajs = replace_rewards(curiosityTrajs, episode=np.max)
             #this is stupid, we should care more(?) if the costs are to high
             realWeight = 0.001 + np.max([np.min([curScore, 0.2]), 0.])*0.998/0.2
             curiosityWeight = 1. - realWeight

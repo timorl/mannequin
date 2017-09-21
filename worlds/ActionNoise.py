@@ -4,15 +4,17 @@ from .BaseWorld import BaseWorld
 class ActionNoise(BaseWorld):
     def __init__(self, inner, *, stddev):
         self.trajectories = lambda agent, n: inner.trajectories(
-            ActionNoiseAgent(agent, stddev),
+            ActionNoiseAgent(agent, stddev=stddev),
             n
         )
-        self.render = lambda a: inner.render(ActionNoiseAgent(a))
+        self.render = lambda agent: inner.render(
+            ActionNoiseAgent(agent, stddev=stddev)
+        )
 
 from models.BaseWrapper import BaseWrapper
 
 class ActionNoiseAgent(BaseWrapper):
-    def __init__(self, inner, stddev):
+    def __init__(self, inner, *, stddev):
         import numpy as np
 
         rng = np.random.RandomState()

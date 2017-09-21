@@ -8,7 +8,9 @@ def policy_gradient(trajs, *, policy):
     learn_inps = []
     learn_grads = []
 
-    for traj, policy_traj in zip(trajs, retrace(trajs, model=policy)):
+    policy_trajs = retrace(trajs, model=policy, with_states=True)
+
+    for traj, policy_traj in zip(trajs, policy_trajs):
         # Unpack trajectories to vertical arrays
         inps, real_outs, rews = zip(*traj)
         states, policy_outs = zip(*policy_traj)

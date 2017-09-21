@@ -10,7 +10,7 @@ sys.path.append("../..")
 from worlds import Gym, StochasticPolicy
 from models import Input, Layer, Softmax, Constant
 from optimizers import Adam
-from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, retrace, get_reward, process_rewards
+from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, retrace, get_rewards, replace_rewards
 
 if "DEBUG" in os.environ:
     import sys
@@ -20,7 +20,7 @@ if "DEBUG" in os.environ:
 def convert_traj(traj, pred, class_id):
     r = 1.+(110.-len(traj))/90.
     if r < 0.1:
-        result = [(o, a, p[class_id]*0.1 + r*0.9) for (o, a, _), (_, p) in zip(traj,pred)]
+        result = [(o, a, p[class_id]*0.1 + r*0.9) for (o, a, _), p in zip(traj,pred)]
     else:
         result = [(o, a, r) for (o, a, _) in traj]
     return result
@@ -94,7 +94,7 @@ def run():
             plot_tagged_trajs(trajsForClass)
             accTrajs = accuracy(trajsForClass, model=classifier)
             print_reward(accTrajs, max_value=1.0, episode=np.mean, label="Cla reward: ")
-            curAccuracy = get_reward(accTrajs, episode=np.mean, episodes=np.mean)
+            curAccuracy = np.mean(get_rewards(accTrajs, episode=np.mean))
             if curAccuracy > 1.-i/500:
                 break
 
@@ -102,8 +102,8 @@ def run():
             classOpt.apply_gradient(grad)
             trajs2 = learn_from_classifier(classifier, trajs[50:], 1)
             print_reward(trajs2, max_value=1.0, episode=np.max, label="Car reward: ")
-            curScore = get_reward(trajs2, episode=np.max, episodes=np.mean)
-            trajs2 = process_rewards(trajs2, episode=np.max)
+            curScore = np.mean(get_rewards(trajs2, episode=np.max))
+            trajs2 = replace_rewards(trajs2, episode=np.max)
             trajs2 = normalize(trajs2)
             grad2 = policy_gradient(trajs2, policy=curCarr)
             carrOpt.apply_gradient(grad2)

@@ -18,6 +18,6 @@ def accuracy(trajs, *, model, percent=False):
             return obs, agent_act, 0.0
 
     return [
-        [process(exp, o) for exp, (s, o) in zip(traj, a_traj)]
-        for traj, a_traj in zip(trajs, retrace(trajs, model=model))
+        [process(exp, o) for exp, o in zip(traj, outs)]
+        for traj, outs in zip(trajs, retrace(trajs, model=model))
     ]

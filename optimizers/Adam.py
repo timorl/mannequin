@@ -2,7 +2,9 @@
 from .BaseTwoMoments import BaseTwoMoments
 
 class Adam(BaseTwoMoments):
-    def __init__(self, value, *, lr, epsilon=1e-8, **params):
+    def __init__(self, value, *, lr,
+            epsilon=1e-8,
+            **params):
         import numpy as np
 
         def update_rule(mean, var):
