@@ -16,7 +16,6 @@ class Mnist(BaseWorld):
             )
 
         data = Mnist.data.test if test else Mnist.data.train
-        rng = np.random.RandomState()
 
         def trajectories(agent, n):
             assert agent == None

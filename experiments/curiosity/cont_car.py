@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 sys.path.append("../..")
 
-from worlds import Gym, StochasticPolicy, BaseWorld, ActionNoise
+from worlds import Gym, StochasticPolicy, BaseWorld, ActionNoise, Cache
 from models import Input, Layer, Softmax, Constant
 from optimizers import Adam
 from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, get_rewards, replace_rewards
@@ -19,7 +19,7 @@ if "DEBUG" in os.environ:
 
 class Curiosity(BaseWorld):
     def __init__(self, inner, *, classifier, history_length, plot=False):
-        history = []
+        history = Cache()
         classOpt = None
 
         def tag_traj(traj, tag):
@@ -38,12 +38,14 @@ class Curiosity(BaseWorld):
                 for (x,y), _, _ in traj:
                     xs.append(x)
                     ys.append(y)
-                plt.plot(xs, ys, color=COLORS[np.argmax(tag)])
+                plt.plot(xs, ys, color=COLORS[np.argmax(tag)], alpha=0.1)
             plt.pause(0.01)
 
         def remember_agent(agent):
             nonlocal history, classOpt
-            history += inner.trajectories(agent, history_length)
+            history.add_trajectories(
+                inner.trajectories(agent, history_length)
+            )
             classOpt = Adam(
                 np.random.randn(classifier.n_params) * 1.,
                 lr=0.5,
@@ -54,18 +56,21 @@ class Curiosity(BaseWorld):
             if classOpt is None:
                 remember_agent(agent)
 
-            classifier.load_params(classOpt.get_value())
-            historyIdx = np.random.choice(len(history), size=n)
-            innerTrajs = [history[i] for i in historyIdx]
-            innerTrajs += inner.trajectories(agent, n)
-            trajsForClass = [tag_traj(traj, [1,0]) for traj in innerTrajs[:n]]
-            trajsForClass += [tag_traj(traj, [0,1]) for traj in innerTrajs[n:]]
+            oldTrajs = history.trajectories(None, n)
+            innerTrajs = inner.trajectories(agent, n)
+
+            trajsForClass = (
+                [tag_traj(traj, [1,0]) for traj in oldTrajs]
+                + [tag_traj(traj, [0,1]) for traj in innerTrajs]
+            )
+
             if plot:
                 plot_tagged_trajs(trajsForClass)
+
+            classifier.load_params(classOpt.get_value())
             grad = policy_gradient(trajsForClass, policy=classifier)
             classOpt.apply_gradient(grad)
 
-            innerTrajs = innerTrajs[n:]
             curiosityTrajs = replace_rewards(
                 innerTrajs,
                 model=classifier,
