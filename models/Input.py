@@ -1,5 +1,5 @@
 
-from .BaseTFModel import BaseTFModel
+from . import BaseTFModel
 
 class Input(BaseTFModel):
     def __init__(self, *shape):

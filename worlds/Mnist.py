@@ -1,5 +1,5 @@
 
-from .BaseWorld import BaseWorld
+from . import BaseWorld
 
 class Mnist(BaseWorld):
     data = None

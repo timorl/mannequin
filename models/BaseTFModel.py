@@ -1,5 +1,5 @@
 
-from .BaseModel import BaseModel
+from . import BaseModel
 
 class BaseTFModel(BaseModel):
     def build_output_tensor(self):

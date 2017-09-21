@@ -1,5 +1,5 @@
 
-from .BaseTwoMoments import BaseTwoMoments
+from . import BaseTwoMoments
 
 class Adam(BaseTwoMoments):
     def __init__(self, value, *, lr,

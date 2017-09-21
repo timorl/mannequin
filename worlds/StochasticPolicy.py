@@ -1,5 +1,6 @@
 
-from .BaseWorld import BaseWorld
+from . import BaseWorld
+from models import BaseWrapper
 
 class StochasticPolicy(BaseWorld):
     def __init__(self, inner):
@@ -8,8 +9,6 @@ class StochasticPolicy(BaseWorld):
             n
         )
         self.render = lambda a: inner.render(StochasticPolicyAgent(a))
-
-from models.BaseWrapper import BaseWrapper
 
 class StochasticPolicyAgent(BaseWrapper):
     def __init__(self, inner):

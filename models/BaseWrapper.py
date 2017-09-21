@@ -1,5 +1,5 @@
 
-from .BaseModel import BaseModel
+from . import BaseModel
 
 class BaseWrapper(BaseModel):
     def __init__(self, inner, **kwargs):

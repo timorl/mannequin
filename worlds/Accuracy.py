@@ -1,5 +1,5 @@
 
-from .BaseWorld import BaseWorld
+from . import BaseWorld
 from trajectories import accuracy
 
 class Accuracy(BaseWorld):

@@ -1,5 +1,6 @@
 
-from .BaseWorld import BaseWorld
+from . import BaseWorld
+from models import BaseWrapper
 
 class ActionNoise(BaseWorld):
     def __init__(self, inner, *, stddev):
@@ -10,8 +11,6 @@ class ActionNoise(BaseWorld):
         self.render = lambda agent: inner.render(
             ActionNoiseAgent(agent, stddev=stddev)
         )
-
-from models.BaseWrapper import BaseWrapper
 
 class ActionNoiseAgent(BaseWrapper):
     def __init__(self, inner, *, stddev):

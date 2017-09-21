@@ -1,5 +1,5 @@
 
-from .BaseWorld import BaseWorld
+from . import BaseWorld
 
 class Gym(BaseWorld):
     def __init__(self, env_name, *, max_steps=-1):

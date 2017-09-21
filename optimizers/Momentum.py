@@ -1,5 +1,5 @@
 
-from .BaseOptimizer import BaseOptimizer
+from . import BaseOptimizer
 
 class Momentum(BaseOptimizer):
     def __init__(self, value, *, lr, memory=0.9, print_norm=False):

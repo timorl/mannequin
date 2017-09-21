@@ -10,14 +10,14 @@ sys.path.append("../..")
 from worlds import Gym, StochasticPolicy, BaseWorld, ActionNoise
 from models import Input, Layer, Softmax, Constant
 from optimizers import Adam
-from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, retrace, get_rewards, replace_rewards
+from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, get_rewards, replace_rewards
 
 if "DEBUG" in os.environ:
     import sys
     import IPython.core.ultratb
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
-class Curiosity(BaseWorld.BaseWorld):
+class Curiosity(BaseWorld):
     def __init__(self, inner, *, classifier, history_length, plot=False):
         history = []
         classOpt = None
@@ -66,8 +66,11 @@ class Curiosity(BaseWorld.BaseWorld):
             classOpt.apply_gradient(grad)
 
             innerTrajs = innerTrajs[n:]
-            preds = retrace(innerTrajs, model=classifier)
-            curiosityTrajs = [[(o, a, p) for (o, a, _), (_, p) in zip(innerTraj, pred)] for innerTraj, pred in zip(innerTrajs, preds)]
+            curiosityTrajs = replace_rewards(
+                innerTrajs,
+                model=classifier,
+                reward=lambda o: o[1]
+            )
             return innerTrajs, curiosityTrajs
 
         self.trajectories = trajectories

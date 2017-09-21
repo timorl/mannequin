@@ -1,5 +1,5 @@
 
-from .BaseWrapper import BaseWrapper
+from . import BaseWrapper
 from ._verify_shapes import verify_shapes
 
 @verify_shapes

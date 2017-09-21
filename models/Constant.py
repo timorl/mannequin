@@ -1,5 +1,5 @@
 
-from .BaseModel import BaseModel
+from . import BaseModel
 from ._verify_shapes import verify_shapes
 
 @verify_shapes

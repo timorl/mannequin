@@ -1,5 +1,5 @@
 
-from .BaseTFModel import BaseTFModel
+from . import BaseTFModel
 
 class Layer(BaseTFModel):
     def __init__(self, tf_model, out_size, activation=None):

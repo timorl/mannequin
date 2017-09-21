@@ -1,5 +1,5 @@
 
-from .BaseTFModel import BaseTFModel
+from . import BaseTFModel
 
 class Maxpool(BaseTFModel):
     def __init__(self, tf_model, *, size, padding="SAME"):

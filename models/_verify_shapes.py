@@ -1,5 +1,5 @@
 
-from .BaseModel import BaseModel
+from . import BaseModel
 
 def verify_shapes(model_cls):
     import numpy as np

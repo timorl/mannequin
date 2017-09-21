@@ -1,5 +1,5 @@
 
-from .BaseTFModel import BaseTFModel
+from . import BaseTFModel
 
 class Conv2d(BaseTFModel):
     def __init__(self, tf_model, *,
