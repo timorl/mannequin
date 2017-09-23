@@ -8,7 +8,7 @@ class Bytes(BaseWorld):
         sequences = [bytes(s) for s in sequences]
         assert len(sequences) >= 1
 
-        one_hot = np.eye(257, 256, dtype=np.int8)
+        one_hot = np.eye(257, 256)
         one_hot.setflags(write=False)
 
         rng = np.random.RandomState()

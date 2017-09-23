@@ -20,4 +20,4 @@ def print_reward(trajs, *, max_value,
     else:
         info += " [" + " " * (50 - bar) + "-" * bar + "]"
 
-    print(info)
+    print(info, flush=True)

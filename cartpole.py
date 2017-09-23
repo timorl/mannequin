@@ -11,7 +11,7 @@ if "DEBUG" in os.environ:
 
 from worlds import Gym, StochasticPolicy
 from models import Input, Layer, Softmax
-from trajectories import normalize, discount, policy_gradient, print_reward
+from trajectories import normalize, discount, policy_gradient, print_reward, get_rewards
 from optimizers import Adams
 
 def run():
@@ -28,20 +28,21 @@ def run():
         memory=0.8
     )
 
-    for _ in range(20):
+    while True:
         model.load_params(opt.get_value())
 
         trajs = world.trajectories(model, 16)
         print_reward(trajs, max_value=500)
+
+        if np.mean(get_rewards(trajs, episode=np.sum)) >= 498:
+            world.render(model)
+            return
 
         trajs = discount(trajs, horizon=500)
         trajs = normalize(trajs)
 
         grad = policy_gradient(trajs, policy=model)
         opt.apply_gradient(grad)
-
-    while True:
-        world.render(model)
 
 if __name__ == "__main__":
     run()
