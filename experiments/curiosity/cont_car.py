@@ -43,8 +43,8 @@ class Curiosity(BaseWorld):
 
         def remember_agent(agent):
             nonlocal history, classOpt
-            history.add_trajectories(
-                inner.trajectories(agent, history_length)
+            history.add_trajectory(
+                *inner.trajectories(agent, history_length)
             )
             classOpt = Adam(
                 np.random.randn(classifier.n_params) * 1.,

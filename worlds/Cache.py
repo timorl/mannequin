@@ -7,7 +7,7 @@ class Cache(BaseWorld):
 
         all_data = []
 
-        def add_trajectories(trajs):
+        def add_trajectory(*trajs):
             nonlocal all_data
 
             for t in trajs:
@@ -44,5 +44,5 @@ class Cache(BaseWorld):
                 for i in rng.choice(len(all_data), size=n)
             ]
 
-        self.add_trajectories = add_trajectories
+        self.add_trajectory = add_trajectory
         self.trajectories = trajectories

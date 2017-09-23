@@ -2,7 +2,7 @@
 from . import BaseWorld
 
 class Gym(BaseWorld):
-    def __init__(self, env_name, *, max_steps=-1):
+    def __init__(self, env_name, *, max_steps=None):
         import gym
         import gym.spaces
         import numpy as np
@@ -67,7 +67,7 @@ class Gym(BaseWorld):
             obs_idx = range(len(envs))
 
             while len(obs) >= 1:
-                # Interrupt if any episode lasts longer than max_steps
+                # Interrupt this loop after max_steps
                 if len(trajs[obs_idx[0]]) == max_steps:
                     break
 

@@ -1,5 +1,6 @@
 
 from .accuracy import accuracy
+from .cross_entropy import cross_entropy
 from .discount import discount
 from .get_rewards import get_rewards
 from .normalize import normalize
