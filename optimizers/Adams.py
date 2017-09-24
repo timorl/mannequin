@@ -8,6 +8,8 @@ class Adams(BaseTwoMoments):
             **params):
         import numpy as np
 
+        assert (power >= 1.0) and (power <= 2.0)
+
         def update_rule(mean, var):
             return lr * (mean / (epsilon + np.power(var, power * 0.5)))
 
