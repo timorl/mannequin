@@ -31,7 +31,7 @@ class Memory(BaseWrapper):
             # The inner agent sees multiple inputs at once
             inner_states, outputs = inner.step(*zip(*states))
             for i in range(len(states)):
-                states[i] = (inner_states[i], states[1][1])
+                states[i] = (inner_states[i], states[i][1])
 
             return states, outputs
 
