@@ -11,7 +11,7 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Bytes
-from models import Constant, Softmax, Input, Layer, Memory
+from models import Constant, Softmax, Input, Layer, History
 from trajectories import policy_gradient, cross_entropy, print_reward
 from optimizers import Adam
 
@@ -43,7 +43,7 @@ def run():
     print("\nMemory\n")
     model = Input(2, 256)
     model = Layer(model, 256)
-    model = Memory(model)
+    model = History(model, length=2)
     model = Softmax(model)
     train(world, model, lr=10.0)
 

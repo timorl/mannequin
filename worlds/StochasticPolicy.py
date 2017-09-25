@@ -4,11 +4,14 @@ from models import BaseWrapper
 
 class StochasticPolicy(BaseWorld):
     def __init__(self, inner):
-        self.trajectories = lambda agent, n: inner.trajectories(
-            StochasticPolicyAgent(agent),
-            n
-        )
-        self.render = lambda a: inner.render(StochasticPolicyAgent(a))
+        def wrap(agent):
+            if agent is None:
+                return None
+            else:
+                return StochasticPolicyAgent(agent)
+
+        self.trajectories = lambda a, n: inner.trajectories(wrap(a), n)
+        self.render = lambda a: inner.render(wrap(a))
 
 class StochasticPolicyAgent(BaseWrapper):
     def __init__(self, inner):
