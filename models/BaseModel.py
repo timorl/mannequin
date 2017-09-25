@@ -3,10 +3,10 @@ class BaseModel(object):
     # Note: models are NOT assumed to be thread-safe
     # (calls can only be made from one thread at a time)
 
-    def get_input_shape(self):
+    def get_n_inputs(self):
         raise NotImplementedError
 
-    def get_output_shape(self):
+    def get_n_outputs(self):
         raise NotImplementedError
 
     def get_n_params(self):
@@ -15,18 +15,20 @@ class BaseModel(object):
     def load_params(self, params):
         raise NotImplementedError
 
-    def param_gradient(self, states, inputs, output_gradients):
+    def outputs(self, inputs):
         raise NotImplementedError
 
-    def step(self, states, inputs): # -> (states, outputs)
+    def param_gradient(self, inputs, output_gradients):
+        raise NotImplementedError
+
+    def input_gradients(self, inputs, output_gradients):
         raise NotImplementedError
 
     # For convenience only
     def __getattr__(self, name):
-        if name in ("inp_shape", "input_shape"):
-            return self.get_input_shape()
-        if name in ("out_shape", "output_shape"):
-            return self.get_output_shape()
-        if name in ("n_params"):
-            return self.get_n_params()
-        return object.__getattribute__(self, name)
+        get = self.__class__.__getattribute__
+        try:
+            return get(self, "get_" + name)()
+        except AttributeError:
+            pass
+        return get(self, name)

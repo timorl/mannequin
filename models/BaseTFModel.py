@@ -7,12 +7,13 @@ class BaseTFModel(BaseModel):
 
     def __getattribute__(self, name):
         lazy_attributes = (
-            "get_input_shape",
-            "get_output_shape",
+            "get_n_inputs",
+            "get_n_outputs",
             "get_n_params",
             "load_params",
+            "outputs",
             "param_gradient",
-            "step",
+            "input_gradients",
         )
 
         try:
@@ -30,7 +31,7 @@ class BaseTFModel(BaseModel):
                     self.initialize(graph, sess)
             tf.reset_default_graph()
 
-        return object.__getattribute__(self, name)
+        return super().__getattribute__(name)
 
     def initialize(self, graph, sess):
         import sys
@@ -51,10 +52,10 @@ class BaseTFModel(BaseModel):
         sys.stderr.write("TensorFlow model: %d parameters\n" % n_params)
 
         # Expose shapes in the public interface
-        input_shape = tuple(inputs.shape.as_list()[1:])
-        output_shape = tuple(outputs.shape.as_list()[1:])
-        self.get_input_shape = lambda: input_shape
-        self.get_output_shape = lambda: output_shape
+        n_inputs = np.prod(inputs.shape.as_list()[1:])
+        n_outputs = np.prod(outputs.shape.as_list()[1:])
+        self.get_n_inputs = lambda: n_inputs
+        self.get_n_outputs = lambda: n_outputs
         self.get_n_params = lambda: n_params
 
         # Create ops to load all parameters from a single array
@@ -68,7 +69,7 @@ class BaseTFModel(BaseModel):
             ))
         assert pos[1] == n_params
 
-        # Backpropagation
+        # Backpropagation to parameters
         out_grad_in = tf.placeholder(tf.float32, outputs.shape)
         intermediate = tf.reduce_sum(tf.reduce_mean(
             tf.multiply(out_grad_in, outputs),
@@ -84,21 +85,36 @@ class BaseTFModel(BaseModel):
                 feed_dict={params_in: feed_params}
             )
 
-        def param_gradient(states, feed_inputs, output_gradients):
-            return sess.run(
+        def get_outputs(feed_inputs):
+            inps_shape = inputs.shape.as_list()
+            inps_shape[0] = len(feed_inputs)
+            feed_inputs = np.reshape(feed_inputs, inps_shape)
+
+            outs = sess.run(
+                outputs,
+                feed_dict={inputs: feed_inputs}
+            )
+
+            return np.reshape(outs, (len(feed_inputs), n_outputs))
+
+        def get_param_gradient(feed_inputs, output_gradients):
+            inps_shape = inputs.shape.as_list()
+            inps_shape[0] = len(feed_inputs)
+            feed_inputs = np.reshape(feed_inputs, inps_shape)
+
+            outs_shape = outputs.shape.as_list()
+            outs_shape[0] = len(feed_inputs)
+            output_gradients = np.reshape(output_gradients, outs_shape)
+
+            grad = sess.run(
                 param_grad,
                 feed_dict={
                     inputs: feed_inputs,
                     out_grad_in: output_gradients
                 }
             )
-
-        def step(states, feed_inputs):
-            return states, sess.run(
-                outputs,
-                feed_dict={inputs: feed_inputs}
-            )
+            return np.reshape(grad, (n_params,))
 
         self.load_params = load_params
-        self.param_gradient = param_gradient
-        self.step = step
+        self.outputs = get_outputs
+        self.param_gradient = get_param_gradient

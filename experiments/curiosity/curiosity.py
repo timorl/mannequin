@@ -18,7 +18,7 @@ if "DEBUG" in os.environ:
 
 def gauss_observation(agents):
     agent = np.random.choice(agents)
-    _, (center,) = agent.step([None],[None])
+    (center,) = agent.outputs([None])
     obs = center + np.random.randn(2)*0.05
     obs += 1001.
     obs = np.abs(obs)
@@ -28,7 +28,7 @@ def gauss_observation(agents):
 
 def learn_from_classifier(classifier, trajs, class_id):
     obs = [o for ((o, _, _),) in trajs]
-    _, pred = classifier.step([None]*len(trajs), obs)
+    pred = classifier.outputs(obs)
     return [[(None, o, p[class_id])] for o, p in zip(obs, pred)]
 
 def run():

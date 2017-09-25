@@ -4,28 +4,44 @@ def retrace(trajs, *, model,
         with_states=False):
     import numpy as np
 
-    results = [[] for _ in trajs]
-    states = [None] * len(results)
+    outputs = [[] for _ in trajs]
+    states = [None] * len(trajs)
     step = 0
 
     while step != max_steps:
         # Find trajectories that are still active
-        pick = [n for n, t in enumerate(trajs) if len(t) > step]
+        pick = [i for i, t in enumerate(trajs) if len(t) > step]
         if len(pick) < 1:
             break
 
         # Get model predictions
-        pick_inputs = [trajs[n][step][0] for n in pick]
-        pick_states = [states[n] for n in pick]
-        pick_states, model_outs = model.step(pick_states, pick_inputs)
-        model_outs = np.asarray(model_outs)
-        assert len(model_outs) == len(pick)
+        picked_inputs = []
+        for i in pick:
+            inp = np.asarray(trajs[i][step][0])
+            if model.n_inputs == 0:
+                assert states[i] is None
+                picked_inputs.append(None)
+            else:
+                assert inp.shape == (model.n_inputs,)
+                if states[i] is not None:
+                    inp = np.concatenate((inp, states[i]))
+                picked_inputs.append(inp)
+
+        picked_outputs = model.outputs(picked_inputs)
+        picked_outputs = np.asarray(picked_outputs)
+        assert len(picked_outputs) == len(pick)
 
         # Save outputs in a way that matches shapes of trajectories
-        for n, s, o in zip(pick, pick_states, model_outs):
-            results[n].append((s, o) if with_states else o)
-            states[n] = s
+        for i, o in zip(pick, picked_outputs):
+            o = np.reshape(o, -1)
+            n = model.n_outputs
+            if len(o) > n:
+                # Preserve state
+                states[i] = o[n:]
+                if not with_states:
+                    o = o[:n]
+            outputs[i].append(o)
 
         step += 1
 
-    return results
+    return outputs

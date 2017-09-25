@@ -3,23 +3,26 @@ from . import BaseModel
 
 class BaseWrapper(BaseModel):
     def __init__(self, inner, *,
-            inp_shape=None,
-            out_shape=None,
+            n_inputs=None,
+            n_outputs=None,
             n_params=None,
             load_params=None,
+            outputs=None,
             param_gradient=None,
-            step=None):
+            input_gradients=None):
 
-        if inp_shape is None: inp_shape = inner.inp_shape
-        if out_shape is None: out_shape = inner.out_shape
+        if n_inputs is None: n_inputs = inner.n_inputs
+        if n_outputs is None: n_outputs = inner.n_outputs
         if n_params is None: n_params = inner.n_params
         if load_params is None: load_params = inner.load_params
+        if outputs is None: outputs = inner.outputs
         if param_gradient is None: param_gradient = inner.param_gradient
-        if step is None: step = inner.step
+        if input_gradients is None: input_gradients = inner.input_gradients
 
-        self.get_input_shape = lambda: inp_shape
-        self.get_output_shape = lambda: out_shape
+        self.get_n_inputs = lambda: n_inputs
+        self.get_n_outputs = lambda: n_outputs
         self.get_n_params = lambda: n_params
         self.load_params = load_params
+        self.outputs = outputs
         self.param_gradient = param_gradient
-        self.step = step
+        self.input_gradients = input_gradients

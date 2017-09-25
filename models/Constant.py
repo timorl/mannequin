@@ -1,33 +1,31 @@
 
 from . import BaseModel
-from ._verify_shapes import verify_shapes
 
-@verify_shapes
 class Constant(BaseModel):
-    def __init__(self, *shape):
+    def __init__(self, size):
         import numpy as np
 
-        shape = tuple(max(1, int(d)) for d in shape)
-        self.get_input_shape = lambda: None
-        self.get_output_shape = lambda: shape
-        self.get_n_params = lambda: np.prod(shape)
+        size = int(size)
+        self.get_n_inputs = lambda: 0
+        self.get_n_outputs = lambda: size
+        self.get_n_params = lambda: size
 
         value = None
 
         def load_params(params):
             nonlocal value
-            value = np.array(params).reshape(shape)
+            value = np.array(params).reshape((size,))
 
-        def param_gradient(states, inputs, output_gradients):
-            output_gradients = np.array(output_gradients)
-            assert output_gradients.shape == (len(states),) + shape
-            return np.mean(output_gradients, axis=0).reshape(-1)
-
-        def step(states, inputs):
+        def outputs(inputs):
             if value is None:
                 raise ValueError("Call load_params() first")
-            return states, np.array([value] * len(states))
+            return np.array([value] * len(inputs))
+
+        def param_gradient(inputs, output_gradients):
+            output_gradients = np.array(output_gradients)
+            assert output_gradients.shape == (len(inputs), size)
+            return np.mean(output_gradients, axis=0)
 
         self.load_params = load_params
+        self.outputs = outputs
         self.param_gradient = param_gradient
-        self.step = step

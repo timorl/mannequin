@@ -6,63 +6,61 @@ class Gym(BaseWorld):
         import gym
         import gym.spaces
         import numpy as np
-        import threading
 
-        free_envs = []
-        lock = threading.Lock()
+        get_env, return_env = env_manager(
+            lambda: env_name() if callable(env_name)
+            else gym.make(str(env_name))
+        )
 
-        def get_env():
-            with lock:
-                if len(free_envs) >= 1:
-                    return free_envs.pop()
-
-            if callable(env_name):
-                return env_name()
+        def space_size(s):
+            if isinstance(s, gym.spaces.Box):
+                return np.prod(s.shape)
+            elif isinstance(s, gym.spaces.Discrete):
+                return s.n
             else:
-                return gym.make(str(env_name))
-
-        def return_env(e):
-            with lock:
-                free_envs.append(e)
+                raise ValueError("Unsupported space: %s" % s)
 
         # Build one copy of the environment just to check shapes
-        return_env(get_env())
-        obs_space = free_envs[0].observation_space
-        act_space = free_envs[0].action_space
+        env = get_env()
+        obs_space = env.observation_space
+        obs_size = space_size(obs_space)
+        act_space = env.action_space
+        act_size = space_size(act_space)
+        return_env(env)
+        del env
 
         def process_obs(o):
             if isinstance(obs_space, gym.spaces.Box):
-                return o
+                return np.reshape(o, (obs_size,))
             elif isinstance(obs_space, gym.spaces.Discrete):
-                one_hot = np.zeros(obs_space.n,)
+                one_hot = np.zeros(obs_size)
                 one_hot[int(o)] = 1.0
                 return one_hot
             else:
-                raise ValueError("Unsupported observation space")
+                raise ValueError("Unsupported space: %s" % obs_space)
 
         def process_action(a):
+            assert a.shape == (act_size,)
             if isinstance(act_space, gym.spaces.Box):
                 if not hasattr(act_space, "diff"):
                     act_space.diff = act_space.high - act_space.low
                     assert (act_space.diff > 0.001).all()
                     assert (act_space.diff < 1000).all()
-                assert a.shape == act_space.shape
+                a = np.reshape(a, act_space.shape)
                 a = np.abs((a - 1.0) % 4.0 - 2.0) * 0.5
                 return act_space.diff * a + act_space.low
             elif isinstance(act_space, gym.spaces.Discrete):
-                assert a.shape == (act_space.n,)
                 i = np.argmax(a)
                 assert a[i] >= 0.99
                 assert a[i] <= 1.01
                 return i
             else:
-                raise ValueError("Unsupported action space")
+                raise ValueError("Unsupported space: %s" % act_space)
 
         def trajectories(agent, n):
             envs = [get_env() for _ in range(n)]
             trajs = [[] for _ in envs]
 
-            sta = [None for _ in envs]
             obs = [process_obs(e.reset()) for e in envs]
             obs_idx = range(len(envs))
 
@@ -72,48 +70,88 @@ class Gym(BaseWorld):
                     break
 
                 # Ask the agent to process observations
-                sta, act = agent.step(sta, obs)
-                assert len(sta) == len(obs_idx)
+                act = agent.outputs(obs)
                 assert len(act) == len(obs_idx)
+                act = np.reshape(act, (len(act), -1))
 
                 # Do a step in each environment and gather observations
-                next_sta, next_obs, next_obs_idx = [], [], []
-                for s, o, a, i in zip(sta, obs, act, obs_idx):
+                next_obs, next_obs_idx = [], []
+                for a, o, i in zip(act, obs, obs_idx):
+                    if len(a) > act_size:
+                        # Preserve model state
+                        state = a[act_size:]
+                        a = a[:act_size]
+                    else:
+                        state = None
                     next_o, r, done, _ = envs[i].step(process_action(a))
+                    next_o = process_obs(next_o)
                     trajs[i].append((o, a, float(r)))
                     if not done:
-                        next_sta.append(s)
-                        next_obs.append(process_obs(next_o))
+                        if state is not None:
+                            next_o = np.concatenate((next_o, state))
+                        next_obs.append(next_o)
                         next_obs_idx.append(i)
 
-                sta, obs, obs_idx = next_sta, next_obs, next_obs_idx
+                obs, obs_idx = next_obs, next_obs_idx
 
             for e in envs:
                 return_env(e)
 
             return trajs
 
-        render_env = None
+        # Always use the same environments for rendering
+        get_render_env, return_render_env = env_manager(get_env)
 
         def render(agent):
-            nonlocal render_env
-
-            if render_env is None:
-                render_env = get_env()
-            render_env.render()
-
-            sta = [None]
-            obs = process_obs(render_env.reset())
-            done = False
+            env = get_render_env()
+            obs = process_obs(env.reset())
+            env.render()
             n_steps = 0
+
+            done = False
             while not done:
-                sta, act = agent.step(sta, [obs])
-                obs, rew, done, _ = render_env.step(process_action(act[0]))
-                render_env.render()
+                (act,) = agent.outputs([obs])
+                if len(act) > act_size:
+                    # Preserve model state
+                    state = act[act_size:]
+                    act = act[:act_size]
+                else:
+                    state = None
+                act = np.reshape(act, -1)
+                obs, rew, done, _ = env.step(process_action(act))
+                env.render()
+                obs = process_obs(obs)
+                if state is not None:
+                    obs = np.concatenate((obs, state))
 
                 n_steps += 1
                 if n_steps == max_steps:
                     break
 
+            return_render_env(env)
+
         self.trajectories = trajectories
         self.render = render
+
+def env_manager(make_env):
+    import threading
+
+    free_envs = []
+    lock = threading.Lock()
+
+    def get_env():
+        with lock:
+            if len(free_envs) >= 1:
+                return free_envs.pop()
+
+        return make_env()
+        if callable(env_name):
+            return env_name()
+        else:
+            return gym.make(str(env_name))
+
+    def return_env(e):
+        with lock:
+            free_envs.append(e)
+
+    return get_env, return_env

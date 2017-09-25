@@ -1,8 +1,6 @@
 
 from . import BaseWrapper
-from ._verify_shapes import verify_shapes
 
-@verify_shapes
 class Softmax(BaseWrapper):
     def __init__(self, inner):
         import numpy as np
@@ -11,13 +9,13 @@ class Softmax(BaseWrapper):
             v = np.exp(v - np.amax(v))
             return v / v.sum()
 
-        def step(states, inputs):
-            states, outputs = inner.step(states, inputs)
-            outputs = np.array(outputs)
+        def outputs(inputs):
+            outputs = np.array(inner.outputs(inputs))
 
+            n = inner.n_outputs
             for i in range(len(outputs)):
-                outputs[i] = softmax(outputs[i])
+                outputs[i,:n] = softmax(outputs[i,:n])
 
-            return states, outputs
+            return outputs
 
-        super().__init__(inner, step=step)
+        super().__init__(inner, outputs=outputs)
