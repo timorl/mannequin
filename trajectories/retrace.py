@@ -1,30 +1,30 @@
 
 def retrace(trajs, *, model,
         max_steps=-1,
-        with_states=False):
+        with_inputs=False):
     import numpy as np
 
     outputs = [[] for _ in trajs]
-    states = [None] * len(trajs)
+    states = [np.zeros(model.n_states)] * len(trajs)
     step = 0
 
     while step != max_steps:
         # Find trajectories that are still active
-        pick = [i for i, t in enumerate(trajs) if len(t) > step]
+        pick = [p for p, t in enumerate(trajs) if len(t) > step]
         if len(pick) < 1:
             break
 
         # Get model predictions
         picked_inputs = []
-        for i in pick:
-            inp = np.asarray(trajs[i][step][0])
+        for p in pick:
+            inp = np.asarray(trajs[p][step][0])
             if model.n_inputs == 0:
-                assert states[i] is None
-                picked_inputs.append(None)
+                # Ignore the actual input from the trajectory
+                picked_inputs.append(states[p])
             else:
                 assert inp.shape == (model.n_inputs,)
-                if states[i] is not None:
-                    inp = np.concatenate((inp, states[i]))
+                if len(states[p]) >= 1:
+                    inp = np.concatenate((inp, states[p]))
                 picked_inputs.append(inp)
 
         picked_outputs = model.outputs(picked_inputs)
@@ -32,15 +32,18 @@ def retrace(trajs, *, model,
         assert len(picked_outputs) == len(pick)
 
         # Save outputs in a way that matches shapes of trajectories
-        for i, o in zip(pick, picked_outputs):
+        for p, i, o in zip(pick, picked_inputs, picked_outputs):
             o = np.reshape(o, -1)
-            n = model.n_outputs
-            if len(o) > n:
+            if model.n_states >= 1:
                 # Preserve state
-                states[i] = o[n:]
-                if not with_states:
-                    o = o[:n]
-            outputs[i].append(o)
+                states[p] = o[model.n_outputs:]
+                o = o[:model.n_outputs]
+            assert len(o) == model.n_outputs
+            assert len(states[p]) == model.n_states
+            if with_inputs:
+                outputs[p].append((i, o))
+            else:
+                outputs[p].append(o)
 
         step += 1
 

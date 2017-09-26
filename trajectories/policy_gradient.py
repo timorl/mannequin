@@ -4,16 +4,17 @@ from .retrace import retrace
 def policy_gradient(trajs, *, policy):
     import numpy as np
 
-    # TODO: support states!
+    # TODO: backprop through states!
 
     learn_inps = []
     learn_grads = []
 
-    policy_trajs = retrace(trajs, model=policy)
+    policy_trajs = retrace(trajs, model=policy, with_inputs=True)
 
-    for traj, policy_outs in zip(trajs, policy_trajs):
+    for traj, policy_traj in zip(trajs, policy_trajs):
         # Unpack trajectories to vertical arrays
-        inps, real_outs, rews = zip(*traj)
+        _, real_outs, rews = zip(*traj)
+        inps, policy_outs = zip(*policy_traj)
 
         # Verify array shapes
         real_outs = np.asarray(real_outs)
@@ -24,6 +25,12 @@ def policy_gradient(trajs, *, policy):
 
         # True off-policy version of REINFORCE (!!!)
         grads = np.multiply((real_outs - policy_outs).T, rews.T).T
+        if policy.n_states >= 1:
+            # There is no gradient for the most recent state
+            grads = np.concatenate(
+                (grads, np.zeros((len(rews), policy.n_states))),
+                axis=1
+            )
 
         learn_inps += inps
         learn_grads += list(grads)

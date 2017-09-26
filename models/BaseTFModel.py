@@ -2,34 +2,27 @@
 from . import BaseModel
 
 class BaseTFModel(BaseModel):
-    def build_output_tensor(self):
+    def _build_output_tensor(self):
         raise NotImplementedError
 
     def __getattribute__(self, name):
-        lazy_attributes = (
-            "get_n_inputs",
-            "get_n_outputs",
-            "get_n_params",
-            "load_params",
-            "outputs",
-            "param_gradient",
-            "input_gradients",
-        )
-
         try:
-            if name in lazy_attributes:
+            if not name.startswith("_"):
                 object.__getattribute__(self, "is_initialized")
         except AttributeError:
+            # Lazy initialization
             self.is_initialized = True
 
-            # Lazy initialization
-            import tensorflow as tf
-            graph = tf.Graph()
-            sess = tf.Session(graph=graph)
-            with graph.as_default():
-                with sess:
-                    self.initialize(graph, sess)
-            tf.reset_default_graph()
+            try:
+                import tensorflow as tf
+                graph = tf.Graph()
+                sess = tf.Session(graph=graph)
+                with graph.as_default():
+                    with sess:
+                        BaseTFModel.initialize(self, graph, sess)
+                tf.reset_default_graph()
+            except Exception:
+                raise ValueError("Could not initialize model")
 
         return super().__getattribute__(name)
 
@@ -39,7 +32,7 @@ class BaseTFModel(BaseModel):
         import tensorflow as tf
 
         # Build graph
-        outputs = self.build_output_tensor()
+        outputs = self._build_output_tensor()
         inputs = graph.get_tensor_by_name("inputs:0")
         params = graph.get_collection("variables")
 
@@ -56,6 +49,7 @@ class BaseTFModel(BaseModel):
         n_outputs = np.prod(outputs.shape.as_list()[1:])
         self.get_n_inputs = lambda: n_inputs
         self.get_n_outputs = lambda: n_outputs
+        self.get_n_states = lambda: 0
         self.get_n_params = lambda: n_params
 
         # Create ops to load all parameters from a single array

@@ -64,6 +64,12 @@ class Gym(BaseWorld):
             obs = [process_obs(e.reset()) for e in envs]
             obs_idx = range(len(envs))
 
+            if agent.n_states >= 1:
+                obs = np.concatenate(
+                    (obs, np.zeros((n, agent.n_states))),
+                    axis=1
+                )
+
             while len(obs) >= 1:
                 # Interrupt this loop after max_steps
                 if len(trajs[obs_idx[0]]) == max_steps:
@@ -77,18 +83,13 @@ class Gym(BaseWorld):
                 # Do a step in each environment and gather observations
                 next_obs, next_obs_idx = [], []
                 for a, o, i in zip(act, obs, obs_idx):
-                    if len(a) > act_size:
-                        # Preserve model state
-                        state = a[act_size:]
-                        a = a[:act_size]
-                    else:
-                        state = None
+                    state = a[act_size:]
+                    a = a[:act_size]
                     next_o, r, done, _ = envs[i].step(process_action(a))
                     next_o = process_obs(next_o)
-                    trajs[i].append((o, a, float(r)))
+                    trajs[i].append((o[:obs_size], a, float(r)))
                     if not done:
-                        if state is not None:
-                            next_o = np.concatenate((next_o, state))
+                        next_o = np.concatenate((next_o, state))
                         next_obs.append(next_o)
                         next_obs_idx.append(i)
 
@@ -104,25 +105,24 @@ class Gym(BaseWorld):
 
         def render(agent):
             env = get_render_env()
+            state = np.zeros(agent.n_states)
             obs = process_obs(env.reset())
+            obs = np.concatenate((obs, state))
             env.render()
             n_steps = 0
 
             done = False
             while not done:
                 (act,) = agent.outputs([obs])
-                if len(act) > act_size:
-                    # Preserve model state
-                    state = act[act_size:]
-                    act = act[:act_size]
-                else:
-                    state = None
                 act = np.reshape(act, -1)
+                state = act[act_size:]
+                act = act[:act_size]
+
                 obs, rew, done, _ = env.step(process_action(act))
                 env.render()
+
                 obs = process_obs(obs)
-                if state is not None:
-                    obs = np.concatenate((obs, state))
+                obs = np.concatenate((obs, state))
 
                 n_steps += 1
                 if n_steps == max_steps:

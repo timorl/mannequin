@@ -40,26 +40,22 @@ class Bytes(BaseWorld):
             return trajs
 
         def render(agent):
+            state = np.zeros(agent.n_states)
             obs = one_hot[256]
+            obs = np.concatenate((obs, state))
             output = []
 
             for _ in range(max_steps):
                 (act,) = agent.outputs([obs])
+                act = np.reshape(act, -1)
+                state = act[256:]
+                act = act[:256]
 
-                if len(act) > 256:
-                    # Preserve model state
-                    state = act[256:]
-                    act = act[:256]
-                else:
-                    state = None
-
-                act = np.reshape(act, 256)
                 b = np.random.choice(256, p=act)
                 output.append(b)
 
                 obs = one_hot[b]
-                if state is not None:
-                    obs = np.concatenate((obs, state))
+                obs = np.concatenate((obs, state))
 
             print(repr(bytes(output)))
 

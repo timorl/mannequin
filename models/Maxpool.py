@@ -1,6 +1,8 @@
 
 from . import BaseTFModel
+from ._verify_shapes import verify_shapes
 
+@verify_shapes
 class Maxpool(BaseTFModel):
     def __init__(self, tf_model, *, size, padding="SAME"):
         import tensorflow as tf
@@ -9,8 +11,8 @@ class Maxpool(BaseTFModel):
         size = int(size)
         padding = str(padding)
 
-        def build_output_tensor():
-            x = tf_model.build_output_tensor()
+        def _build_output_tensor():
+            x = tf_model._build_output_tensor()
 
             # Make sure the first dimension is batch
             x_shape = x.shape.as_list()
@@ -31,4 +33,4 @@ class Maxpool(BaseTFModel):
                 padding=padding
             )
 
-        self.build_output_tensor = build_output_tensor
+        self._build_output_tensor = _build_output_tensor

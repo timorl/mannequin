@@ -1,6 +1,8 @@
 
 from . import BaseTFModel
+from ._verify_shapes import verify_shapes
 
+@verify_shapes
 class Layer(BaseTFModel):
     def __init__(self, tf_model, out_size, activation=None):
         import tensorflow as tf
@@ -8,8 +10,8 @@ class Layer(BaseTFModel):
 
         out_size = int(out_size)
 
-        def build_output_tensor():
-            x = tf_model.build_output_tensor()
+        def _build_output_tensor():
+            x = tf_model._build_output_tensor()
 
             # Make sure the first dimension is batch
             x_shape = x.shape.as_list()
@@ -38,4 +40,4 @@ class Layer(BaseTFModel):
 
             return x
 
-        self.build_output_tensor = build_output_tensor
+        self._build_output_tensor = _build_output_tensor

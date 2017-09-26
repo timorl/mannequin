@@ -9,6 +9,9 @@ class BaseModel(object):
     def get_n_outputs(self):
         raise NotImplementedError
 
+    def get_n_states(self):
+        raise NotImplementedError
+
     def get_n_params(self):
         raise NotImplementedError
 
@@ -26,9 +29,8 @@ class BaseModel(object):
 
     # For convenience only
     def __getattr__(self, name):
-        get = self.__class__.__getattribute__
-        try:
-            return get(self, "get_" + name)()
-        except AttributeError:
-            pass
-        return get(self, name)
+        if name == "n_inputs": return self.get_n_inputs()
+        if name == "n_outputs": return self.get_n_outputs()
+        if name == "n_states": return self.get_n_states()
+        if name == "n_params": return self.get_n_params()
+        raise AttributeError

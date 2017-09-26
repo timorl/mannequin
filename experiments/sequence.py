@@ -33,7 +33,7 @@ def train(world, model, *, lr):
             label="Surprise/byte:", max_value=8.0)
 
 def run():
-    world = Bytes(b"abcdabcdabcdabcd", max_steps=4)
+    world = Bytes(b"aabbaab", max_steps=4)
 
     print("\nConstant model\n")
     model = Constant(256)

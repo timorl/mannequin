@@ -1,6 +1,8 @@
 
 from . import BaseModel
+from ._verify_shapes import verify_shapes
 
+@verify_shapes
 class Constant(BaseModel):
     def __init__(self, size):
         import numpy as np
@@ -8,6 +10,7 @@ class Constant(BaseModel):
         size = int(size)
         self.get_n_inputs = lambda: 0
         self.get_n_outputs = lambda: size
+        self.get_n_states = lambda: 0
         self.get_n_params = lambda: size
 
         value = None
