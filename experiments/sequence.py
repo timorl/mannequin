@@ -15,10 +15,10 @@ from models import Constant, Input, Layer, LReLU, History, Softmax
 from trajectories import policy_gradient, cross_entropy, print_reward
 from optimizers import Adam
 
-def train(world, model, *, lr):
+def train(world, model):
     opt = Adam(
         np.random.randn(model.n_params),
-        lr=lr,
+        lr=0.3,
         memory=0.9
     )
 
@@ -33,29 +33,29 @@ def train(world, model, *, lr):
             label="Surprise/byte:", max_value=8.0)
 
 def run():
-    world = Bytes(b"aabbaab", max_steps=4)
+    world = Bytes(b"aabbaab", max_steps=4, charset=b'abcd')
 
     print("\nConstant model:\n")
-    model = Constant(256)
+    model = Constant(4)
     model = Softmax(model)
-    train(world, model, lr=2.0)
+    train(world, model)
 
     print("\nLast character:\n")
-    model = Input(256)
-    model = Layer(model, 256)
+    model = Input(4)
+    model = Layer(model, 4)
     model = LReLU(model)
-    model = Layer(model, 256)
+    model = Layer(model, 4)
     model = Softmax(model)
-    train(world, model, lr=0.5)
+    train(world, model)
 
     print("\nLast two characters:\n")
-    model = Input(2, 256)
-    model = Layer(model, 256)
+    model = Input(2, 4)
+    model = Layer(model, 4)
     model = LReLU(model)
-    model = Layer(model, 256)
+    model = Layer(model, 4)
     model = History(model, length=2)
     model = Softmax(model)
-    train(world, model, lr=0.5)
+    train(world, model)
 
 if __name__ == "__main__":
     run()

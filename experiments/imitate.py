@@ -40,12 +40,15 @@ def run():
         return
 
     with open(sys.argv[1], "r") as f:
-        world = Bytes(f.buffer.read(), max_steps=100)
+        data = f.buffer.read()
+    charset = set(data)
+    world = Bytes(data, max_steps=100, charset=charset)
+    print("Charset size: %d" % len(charset))
 
-    model = Input(10, 256)
+    model = Input(10, len(charset))
     model = Layer(model, 256)
     model = LReLU(model)
-    model = Layer(model, 256)
+    model = Layer(model, len(charset))
     model = History(model, length=10)
     model = Softmax(model)
 

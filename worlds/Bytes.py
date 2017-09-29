@@ -2,24 +2,37 @@
 from . import BaseWorld
 
 class Bytes(BaseWorld):
-    def __init__(self, *sequences, max_steps=1024):
+    def __init__(self, *sequences, max_steps=1024, charset=None):
         import numpy as np
-
-        max_steps = int(max_steps)
-        assert max_steps >= 1
 
         sequences = [bytes(s) for s in sequences]
         assert len(sequences) >= 1
 
-        one_hot = np.eye(257, 256)
+        max_steps = int(max_steps)
+        assert max_steps >= 1
+
+        if charset is None:
+            charset = range(256)
+        charset = sorted(list(set(charset)))
+        assert len(charset) >= 1
+        assert charset[0] >= 0 and charset[-1] <= 255
+
+        n_inputs = len(charset)
+        one_hot = np.eye(n_inputs)
         one_hot.setflags(write=False)
+        zeros = np.zeros(n_inputs)
+        zeros.setflags(write=False)
+
+        encoding = [zeros] * 256
+        for i, c in enumerate(charset):
+            encoding[c] = one_hot[i]
 
         rng = np.random.RandomState()
 
         def encode(seq):
-            traj = [(one_hot[256], one_hot[seq[0]], 1.0)]
-            for cur_b, next_b in zip(seq, seq[1:]):
-                traj.append((one_hot[cur_b], one_hot[next_b], 1.0))
+            traj = [(zeros, encoding[seq[0]], 1.0)]
+            for a, b in zip(seq, seq[1:]):
+                traj.append((encoding[a], encoding[b], 1.0))
             return traj
 
         def trajectories(agent, n):
@@ -40,19 +53,17 @@ class Bytes(BaseWorld):
             return trajs
 
         def render(agent):
-            state = np.zeros(agent.n_states)
-            obs = one_hot[256]
-            obs = np.concatenate((obs, state))
+            obs = np.zeros(n_inputs + agent.n_states)
             output = []
 
             for _ in range(max_steps):
                 (act,) = agent.outputs([obs])
                 act = np.reshape(act, -1)
-                state = act[256:]
-                act = act[:256]
+                state = act[n_inputs:]
+                act = act[:n_inputs]
 
-                b = np.random.choice(256, p=act)
-                output.append(b)
+                b = np.random.choice(n_inputs, p=act)
+                output.append(charset[b])
 
                 obs = one_hot[b]
                 obs = np.concatenate((obs, state))
