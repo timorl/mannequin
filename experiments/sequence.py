@@ -11,7 +11,7 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Bytes
-from models import Constant, Softmax, Input, Layer, History
+from models import Constant, Input, Layer, LReLU, History, Softmax
 from trajectories import policy_gradient, cross_entropy, print_reward
 from optimizers import Adam
 
@@ -35,17 +35,27 @@ def train(world, model, *, lr):
 def run():
     world = Bytes(b"aabbaab", max_steps=4)
 
-    print("\nConstant model\n")
+    print("\nConstant model:\n")
     model = Constant(256)
     model = Softmax(model)
     train(world, model, lr=2.0)
 
-    print("\nMemory\n")
+    print("\nLast character:\n")
+    model = Input(256)
+    model = Layer(model, 256)
+    model = LReLU(model)
+    model = Layer(model, 256)
+    model = Softmax(model)
+    train(world, model, lr=0.5)
+
+    print("\nLast two characters:\n")
     model = Input(2, 256)
+    model = Layer(model, 256)
+    model = LReLU(model)
     model = Layer(model, 256)
     model = History(model, length=2)
     model = Softmax(model)
-    train(world, model, lr=10.0)
+    train(world, model, lr=0.5)
 
 if __name__ == "__main__":
     run()

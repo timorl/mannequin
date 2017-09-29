@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 sys.path.append("../..")
 
 from worlds import Gym, StochasticPolicy, BaseWorld, ActionNoise, Cache
-from models import Input, Layer, Softmax, Constant
+from models import Input, Layer, LReLU, Softmax, Constant
 from optimizers import Adam
 from trajectories import policy_gradient, normalize, discount, print_reward, accuracy, get_rewards, replace_rewards
 
@@ -96,13 +96,15 @@ def combine_rewards(trajss, weights):
 
 def carr():
     carr = Input(2)
-    carr = Layer(carr, 32, "lrelu")
+    carr = Layer(carr, 32)
+    carr = LReLU(carr)
     carr = Layer(carr, 1)
     return carr
 
 def run():
     classifier = Input(2)
-    classifier = Layer(classifier, 16, "lrelu")
+    classifier = Layer(classifier, 16)
+    classifier = LReLU(classifier)
     classifier = Layer(classifier, 2)
     classifier = Softmax(classifier)
 

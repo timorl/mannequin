@@ -10,13 +10,14 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Gym, StochasticPolicy
-from models import Input, Layer, Softmax
+from models import Input, Layer, Softmax, LReLU
 from trajectories import normalize, discount, policy_gradient, print_reward, get_rewards
 from optimizers import Adams
 
 def run():
     model = Input(4)
-    model = Layer(model, 64, "lrelu")
+    model = Layer(model, 64)
+    model = LReLU(model)
     model = Layer(model, 2)
     model = Softmax(model)
 

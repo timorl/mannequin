@@ -11,7 +11,7 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Bytes
-from models import Constant, Softmax, Input, Layer, History
+from models import Constant, Softmax, Input, Layer, LReLU, History
 from trajectories import policy_gradient, cross_entropy, print_reward
 from optimizers import Adam
 
@@ -43,7 +43,8 @@ def run():
         world = Bytes(f.buffer.read(), max_steps=100)
 
     model = Input(10, 256)
-    model = Layer(model, 256, "relu")
+    model = Layer(model, 256)
+    model = LReLU(model)
     model = Layer(model, 256)
     model = History(model, length=10)
     model = Softmax(model)

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 sys.path.append("../..")
 
-from models import Input, Layer, Softmax, Constant
+from models import Input, Layer, LReLU, Softmax, Constant
 from optimizers import Adam
 from trajectories import policy_gradient, normalize, discount, print_reward, accuracy
 
@@ -33,7 +33,8 @@ def learn_from_classifier(classifier, trajs, class_id):
 
 def run():
     classifier = Input(2)
-    classifier = Layer(classifier, 16, "lrelu")
+    classifier = Layer(classifier, 16)
+    classifier = LReLU(classifier)
     classifier = Layer(classifier, 2)
     classifier = Softmax(classifier)
 

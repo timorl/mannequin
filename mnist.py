@@ -10,7 +10,7 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Mnist
-from models import Input, Layer, Conv2d, Maxpool, Softmax
+from models import Input, Layer, LReLU, Conv2d, Maxpool, Softmax
 from trajectories import policy_gradient, accuracy, print_reward
 from optimizers import Adams
 
@@ -20,7 +20,8 @@ def run():
     model = Maxpool(model, size=2)
     model = Conv2d(model, size=5, channels=16)
     model = Maxpool(model, size=2)
-    model = Layer(model, 32, "lrelu")
+    model = Layer(model, 32)
+    model = LReLU(model)
     model = Layer(model, 10)
     model = Softmax(model)
 

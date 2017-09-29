@@ -9,7 +9,7 @@ class Input(BaseTFModel):
 
         shape = tuple(max(1, int(d)) for d in shape)
 
-        def _build_output_tensor():
+        def _build_output_tensor(state_in, state_out):
             return tf.placeholder(
                 tf.float32,
                 (None,) + shape,

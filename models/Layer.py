@@ -4,14 +4,14 @@ from ._verify_shapes import verify_shapes
 
 @verify_shapes
 class Layer(BaseTFModel):
-    def __init__(self, tf_model, out_size, activation=None):
+    def __init__(self, inner, out_size):
         import tensorflow as tf
         import numpy as np
 
         out_size = int(out_size)
 
-        def _build_output_tensor():
-            x = tf_model._build_output_tensor()
+        def _build_output_tensor(state_in, state_out):
+            x = inner._build_output_tensor(state_in, state_out)
 
             # Make sure the first dimension is batch
             x_shape = x.shape.as_list()
@@ -25,18 +25,6 @@ class Layer(BaseTFModel):
             w = tf.Variable(tf.zeros([in_size, out_size]))
             b = tf.Variable(tf.zeros([out_size]))
             x = (tf.matmul(x, w) + b) / np.sqrt(in_size + 1)
-
-            # Apply activation to the output
-            if activation is None:
-                pass
-            elif activation == "relu":
-                x = tf.nn.relu(x)
-            elif activation == "lrelu":
-                x = tf.nn.relu(x) - 0.1 * tf.nn.relu(-x)
-            elif activation == "tanh":
-                x = tf.nn.tanh(x)
-            else:
-                raise ValueError("Unknown activation type: %s" % l)
 
             return x
 

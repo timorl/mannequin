@@ -8,5 +8,7 @@ from .Conv2d import Conv2d
 from .History import History
 from .Input import Input
 from .Layer import Layer
+from .LReLU import LReLU
 from .Maxpool import Maxpool
 from .Softmax import Softmax
+from .Tanh import Tanh

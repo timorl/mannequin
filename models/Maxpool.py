@@ -4,15 +4,15 @@ from ._verify_shapes import verify_shapes
 
 @verify_shapes
 class Maxpool(BaseTFModel):
-    def __init__(self, tf_model, *, size, padding="SAME"):
+    def __init__(self, inner, *, size, padding="SAME"):
         import tensorflow as tf
         import numpy as np
 
         size = int(size)
         padding = str(padding)
 
-        def _build_output_tensor():
-            x = tf_model._build_output_tensor()
+        def _build_output_tensor(state_in, state_out):
+            x = inner._build_output_tensor(state_in, state_out)
 
             # Make sure the first dimension is batch
             x_shape = x.shape.as_list()

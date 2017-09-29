@@ -12,7 +12,7 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Gym, StochasticPolicy
-from models import Input, Layer, Softmax
+from models import Input, Layer, LReLU, Softmax
 from trajectories import policy_gradient, normalize, discount, print_reward
 from optimizers import Adam
 
@@ -28,7 +28,8 @@ def make_env():
 
 def run():
     model = Input(4)
-    model = Layer(model, 128, "lrelu")
+    model = Layer(model, 128)
+    model = LReLU(model)
     model = Layer(model, 2)
     model = Softmax(model)
 
