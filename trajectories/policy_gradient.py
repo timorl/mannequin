@@ -1,20 +1,30 @@
 
 from .retrace import retrace
 
-def policy_gradient(trajs, *, policy):
+def policy_gradient(trajs, *, policy, state_grad_clip=1.0):
     import numpy as np
 
-    # TODO: backprop through states!
-
-    learn_inps = []
-    learn_grads = []
+    grad_sum = 0.0
+    grad_count = 0
 
     policy_trajs = retrace(trajs, model=policy, with_inputs=True)
 
-    for traj, policy_traj in zip(trajs, policy_trajs):
-        # Unpack trajectories to vertical arrays
-        _, real_outs, rews = zip(*traj)
-        inps, policy_outs = zip(*policy_traj)
+    # Final states have no gradients
+    state_grads = [np.zeros(policy.n_states)] * len(trajs)
+
+    # Start from the last step and move backwards in time
+    step = np.max([len(t) for t in trajs])
+
+    while step >= 1:
+        step -= 1
+
+        # Find trajectories that are active at this time
+        pick = [p for p, t in enumerate(trajs) if len(t) > step]
+
+        inps = [policy_trajs[p][step][0] for p in pick]
+        rews = [trajs[p][step][2] for p in pick]
+        real_outs = [trajs[p][step][1] for p in pick]
+        policy_outs = [policy_trajs[p][step][1] for p in pick]
 
         # Verify array shapes
         real_outs = np.asarray(real_outs)
@@ -25,14 +35,23 @@ def policy_gradient(trajs, *, policy):
 
         # True off-policy version of REINFORCE (!!!)
         grads = np.multiply((real_outs - policy_outs).T, rews.T).T
+
         if policy.n_states >= 1:
-            # There is no gradient for the most recent state
             grads = np.concatenate(
-                (grads, np.zeros((len(rews), policy.n_states))),
+                (grads, [state_grads[p] for p in pick]),
                 axis=1
             )
 
-        learn_inps += inps
-        learn_grads += list(grads)
+        grad_sum += policy.param_gradient_sum(inps, grads)
+        grad_count += len(pick)
 
-    return policy.param_gradient(learn_inps, learn_grads)
+        # Backpropagation through time
+        if step >= 1 and policy.n_states >= 1:
+            grads = policy.input_gradients(inps, grads)
+            grads = np.asarray(grads)[:,policy.n_inputs:]
+            assert grads.shape == (len(pick), policy.n_states)
+            grads = np.clip(grads, -state_grad_clip, state_grad_clip)
+            for p, g in enumerate(grads):
+                state_grads[p] = g
+
+    return grad_sum / grad_count

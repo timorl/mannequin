@@ -42,6 +42,11 @@ class BaseTFModel(BaseModel):
                 n += np.prod(shape)
             return n
 
+        def gradient(x, *, wrt):
+            grad_list = tf.gradients(x, wrt)
+            grad_list = [tf.reshape(g, [-1]) for g in grad_list]
+            return tf.concat(grad_list, axis=0)
+
         # Build graph
         states = []
         states_out = []
@@ -85,15 +90,11 @@ class BaseTFModel(BaseModel):
             ))
         assert pos[1] == n_params
 
-        # Backpropagation to parameters
+        # Backpropagation
         out_grad_in = tf.placeholder(tf.float32, outputs.shape)
-        intermediate = tf.reduce_sum(tf.reduce_mean(
-            tf.multiply(out_grad_in, outputs),
-            axis=0 # (batch average)
-        ))
-        grad_list = tf.gradients(intermediate, params)
-        grad_list = [tf.reshape(g, [-1]) for g in grad_list]
-        param_grad = tf.concat(grad_list, axis=0)
+        intermediate = tf.reduce_sum(tf.multiply(out_grad_in, outputs))
+        param_grad = gradient(intermediate, wrt=params)
+        input_grad = gradient(intermediate, wrt=[inputs] + states)
 
         def load_params(feed_params):
             sess.run(
@@ -101,7 +102,7 @@ class BaseTFModel(BaseModel):
                 feed_dict={params_in: feed_params}
             )
 
-        def feed(feed_inputs, feed_dict={}):
+        def feed(feed_inputs, *, feed_dict={}):
             batch = len(feed_inputs)
             feed_inputs = np.reshape(feed_inputs, (batch, -1))
 
@@ -125,12 +126,22 @@ class BaseTFModel(BaseModel):
         def get_outputs(feed_inputs):
             return sess.run(outputs, feed_dict=feed(feed_inputs))
 
-        def get_param_gradient(feed_inputs, output_gradients):
+        def param_gradient_sum(feed_inputs, output_gradients):
             return sess.run(param_grad, feed_dict=feed(
                 feed_inputs,
-                {out_grad_in: output_gradients}
+                feed_dict={out_grad_in: output_gradients}
             ))
+
+        def input_gradients(feed_inputs, output_gradients):
+            result = []
+            for i, g in zip(feed_inputs, output_gradients):
+                result.append(sess.run(input_grad, feed_dict=feed(
+                    i[np.newaxis,:],
+                    feed_dict={out_grad_in: g[np.newaxis,:]}
+                )))
+            return np.asarray(result)
 
         self.load_params = load_params
         self.outputs = get_outputs
-        self.param_gradient = get_param_gradient
+        self.param_gradient_sum = param_gradient_sum
+        self.input_gradients = input_gradients

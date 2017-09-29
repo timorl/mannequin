@@ -40,8 +40,8 @@ def verify_shapes(model_cls):
             outputs(len(i), inner.outputs(inputs(len(i), i)))
         )
 
-        self.param_gradient = lambda i, o: (
-            params(inner.param_gradient(
+        self.param_gradient_sum = lambda i, o: (
+            params(inner.param_gradient_sum(
                 inputs(len(i), i),
                 outputs(len(i), o)
             ))

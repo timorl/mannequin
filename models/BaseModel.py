@@ -21,7 +21,7 @@ class BaseModel(object):
     def outputs(self, inputs):
         raise NotImplementedError
 
-    def param_gradient(self, inputs, output_gradients):
+    def param_gradient_sum(self, inputs, output_gradients):
         raise NotImplementedError
 
     def input_gradients(self, inputs, output_gradients):

@@ -9,6 +9,7 @@ from .History import History
 from .Input import Input
 from .Layer import Layer
 from .LReLU import LReLU
+from .LSTM import LSTM
 from .Maxpool import Maxpool
 from .Softmax import Softmax
 from .Tanh import Tanh

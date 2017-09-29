@@ -24,11 +24,11 @@ class Constant(BaseModel):
                 raise ValueError("Call load_params() first")
             return np.array([value] * len(inputs))
 
-        def param_gradient(inputs, output_gradients):
+        def param_gradient_sum(inputs, output_gradients):
             output_gradients = np.array(output_gradients)
             assert output_gradients.shape == (len(inputs), size)
-            return np.mean(output_gradients, axis=0)
+            return np.sum(output_gradients, axis=0)
 
         self.load_params = load_params
         self.outputs = outputs
-        self.param_gradient = param_gradient
+        self.param_gradient_sum = param_gradient_sum

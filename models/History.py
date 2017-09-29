@@ -21,9 +21,9 @@ class History(BaseWrapper):
             inputs = inputs[:,:((length-1) * single_frame)]
             return np.concatenate((outputs, inputs), axis=1)
 
-        def param_gradient(inputs, output_gradients):
+        def param_gradient_sum(inputs, output_gradients):
             output_gradients = output_gradients[:,:inner.n_outputs]
-            return inner.param_gradient(inputs, output_gradients)
+            return inner.param_gradient_sum(inputs, output_gradients)
 
         def input_gradients(inputs, output_gradients):
             output_gradients = output_gradients[:,:inner.n_outputs]
@@ -33,5 +33,5 @@ class History(BaseWrapper):
             n_inputs=single_frame,
             n_states=(length-1) * single_frame,
             outputs=outputs,
-            param_gradient=param_gradient,
+            param_gradient_sum=param_gradient_sum,
             input_gradients=input_gradients)

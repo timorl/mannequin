@@ -11,20 +11,20 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Bytes
-from models import Constant, Softmax, Input, Layer, LReLU, History
+from models import Input, LSTM, Layer, Softmax
 from trajectories import policy_gradient, cross_entropy, print_reward
 from optimizers import Adam
 
 def train(world, model):
     opt = Adam(
         np.random.randn(model.n_params),
-        lr=1.0,
-        memory=0.5
+        lr=0.01,
+        memory=0.9
     )
 
-    for _ in range(20):
+    for _ in range(1000):
         model.load_params(opt.get_value())
-        trajs = world.trajectories(None, 128)
+        trajs = world.trajectories(None, 1)
         grad = policy_gradient(trajs, policy=model)
         opt.apply_gradient(grad)
 
@@ -45,11 +45,9 @@ def run():
     world = Bytes(data, max_steps=100, charset=charset)
     print("Charset size: %d" % len(charset))
 
-    model = Input(10, len(charset))
-    model = Layer(model, 256)
-    model = LReLU(model)
+    model = Input(len(charset))
+    model = LSTM(model)
     model = Layer(model, len(charset))
-    model = History(model, length=10)
     model = Softmax(model)
 
     train(world, model)

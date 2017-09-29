@@ -9,7 +9,7 @@ class BaseWrapper(BaseModel):
             n_params=None,
             load_params=None,
             outputs=None,
-            param_gradient=None,
+            param_gradient_sum=None,
             input_gradients=None):
 
         if n_inputs is None: n_inputs = inner.n_inputs
@@ -18,7 +18,7 @@ class BaseWrapper(BaseModel):
         if n_params is None: n_params = inner.n_params
         if load_params is None: load_params = inner.load_params
         if outputs is None: outputs = inner.outputs
-        if param_gradient is None: param_gradient = inner.param_gradient
+        if param_gradient_sum is None: param_gradient_sum = inner.param_gradient_sum
         if input_gradients is None: input_gradients = inner.input_gradients
 
         self.get_n_inputs = lambda: n_inputs
@@ -27,5 +27,5 @@ class BaseWrapper(BaseModel):
         self.get_n_params = lambda: n_params
         self.load_params = load_params
         self.outputs = outputs
-        self.param_gradient = param_gradient
+        self.param_gradient_sum = param_gradient_sum
         self.input_gradients = input_gradients
