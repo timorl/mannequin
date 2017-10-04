@@ -11,40 +11,51 @@ if "DEBUG" in os.environ:
 
 from worlds import Mnist
 from models import Input, Layer, LReLU, Conv2d, Maxpool, Softmax
-from trajectories import policy_gradient, accuracy, print_reward
+from trajectories import policy_gradient, accuracy, print_reward, get_rewards
 from optimizers import Adams
+
+def print_score(model, train_world, test_world):
+    trajs = train_world.trajectories(None, 2000)
+    trajs = accuracy(trajs, model=model, percent=True)
+    print("train: %6.2f" % np.mean(get_rewards(trajs)), end="")
+
+    trajs = test_world.trajectories(None, 2000)
+    trajs = accuracy(trajs, model=model, percent=True)
+    print_reward(trajs, max_value=100, label=", test:")
 
 def run():
     model = Input(28, 28)
-    model = Conv2d(model, size=5, channels=8)
+    model = Conv2d(model, size=3, channels=8)
     model = Maxpool(model, size=2)
     model = Conv2d(model, size=5, channels=16)
     model = Maxpool(model, size=2)
-    model = Layer(model, 32)
+    model = Layer(model, 128)
     model = LReLU(model)
     model = Layer(model, 10)
     model = Softmax(model)
 
     world = Mnist()
+    test_world = Mnist(test=True)
 
     opt = Adams(
         np.random.randn(model.n_params),
-        lr=0.1,
+        lr=0.06,
         power=1.1
     )
 
     for i in range(600):
-        model.load_params(opt.get_value())
+        model.load_params(
+            opt.get_value()
+            + np.random.randn(model.n_params) * 0.01
+        )
+
         trajs = world.trajectories(None, 256)
         grad = policy_gradient(trajs, policy=model)
         opt.apply_gradient(grad)
 
-        trajs = accuracy(trajs, model=model, percent=True)
-        print_reward(trajs, max_value=100, label="Train accuracy:")
-
-    trajs = Mnist(test=True).trajectories(None, 4096)
-    trajs = accuracy(trajs, model=model, percent=True)
-    print_reward(trajs, max_value=100, label="Test accuracy: ")
+        if i % 20 == 19:
+            print("%4d) " % (i+1), flush=True, end="")
+            print_score(model, world, test_world)
 
 if __name__ == "__main__":
     run()

@@ -11,7 +11,7 @@ def print_reward(trajs, *, max_value,
 
     avg = np.mean(get_rewards(trajs, episode=episode))
 
-    info = "%s %10.2f" % (label, avg)
+    info = ("%%s %%%d.2f" % len("%.2f" % max_value)) % (label, avg)
     bar = max(0.0, min(1.0, abs(avg) / abs(max_value)))
     bar = int(round(bar * 50.0))
 
