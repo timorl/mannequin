@@ -1,5 +1,6 @@
 
 from .BaseWorld import BaseWorld
+from .BaseTable import BaseTable
 
 from .Accuracy import Accuracy
 from .ActionNoise import ActionNoise

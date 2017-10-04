@@ -1,7 +1,7 @@
 
-from . import BaseWorld
+from . import BaseTable
 
-class Mnist(BaseWorld):
+class Mnist(BaseTable):
     data = None
 
     def __init__(self, *, test=False):
@@ -16,15 +16,4 @@ class Mnist(BaseWorld):
             )
 
         data = Mnist.data.test if test else Mnist.data.train
-
-        def trajectories(agent, n):
-            assert agent == None
-            assert n >= 1
-
-            inputs, labels = data.next_batch(n)
-            return [
-                [(i, l, 1.0)]
-                for i, l in zip(inputs, labels)
-            ]
-
-        self.trajectories = trajectories
+        super().__init__(data.images, data.labels)
