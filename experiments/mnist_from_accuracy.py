@@ -11,15 +11,15 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Mnist, Accuracy, StochasticPolicy
-from models import Input, Layer, LReLU, Softmax
+from models import Input, Affine, LReLU, Softmax
 from trajectories import policy_gradient, print_reward
 from optimizers import Adams
 
 def run():
     model = Input(28, 28)
-    model = Layer(model, 128)
+    model = Affine(model, 128)
     model = LReLU(model)
-    model = Layer(model, 10)
+    model = Affine(model, 10)
     model = Softmax(model)
 
     train_world = StochasticPolicy(Accuracy(Mnist()))

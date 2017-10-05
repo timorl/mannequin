@@ -10,7 +10,7 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Mnist
-from models import Input, Layer, LReLU, Conv2d, Maxpool, Softmax
+from models import Input, Affine, LReLU, Conv2d, Maxpool, Softmax
 from trajectories import policy_gradient, accuracy, print_reward, get_rewards
 from optimizers import Adams
 
@@ -26,12 +26,14 @@ def print_score(model, train_world, test_world):
 def run():
     model = Input(28, 28)
     model = Conv2d(model, size=3, channels=8)
+    model = LReLU(model)
     model = Maxpool(model, size=2)
     model = Conv2d(model, size=5, channels=16)
-    model = Maxpool(model, size=2)
-    model = Layer(model, 128)
     model = LReLU(model)
-    model = Layer(model, 10)
+    model = Maxpool(model, size=2)
+    model = Affine(model, 128)
+    model = LReLU(model)
+    model = Affine(model, 10)
     model = Softmax(model)
 
     world = Mnist()

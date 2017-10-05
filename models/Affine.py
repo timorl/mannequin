@@ -3,7 +3,7 @@ from . import BaseTFModel
 from ._verify_shapes import verify_shapes
 
 @verify_shapes
-class Layer(BaseTFModel):
+class Affine(BaseTFModel):
     def __init__(self, inner, out_size):
         import tensorflow as tf
         import numpy as np

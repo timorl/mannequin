@@ -10,15 +10,15 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Gym, StochasticPolicy
-from models import Input, Layer, Softmax, LReLU
+from models import Input, Affine, Softmax, LReLU
 from trajectories import normalize, discount, policy_gradient, print_reward, get_rewards
 from optimizers import Adams
 
 def run():
     model = Input(4)
-    model = Layer(model, 64)
+    model = Affine(model, 64)
     model = LReLU(model)
-    model = Layer(model, 2)
+    model = Affine(model, 2)
     model = Softmax(model)
 
     world = StochasticPolicy(Gym("CartPole-v1"))

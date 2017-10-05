@@ -11,7 +11,7 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Bytes
-from models import Input, LSTM, Layer, Softmax
+from models import Input, LSTM, Affine, Softmax
 from trajectories import policy_gradient, cross_entropy, print_reward
 from optimizers import Adam
 
@@ -47,7 +47,7 @@ def run():
 
     model = Input(len(charset))
     model = LSTM(model)
-    model = Layer(model, len(charset))
+    model = Affine(model, len(charset))
     model = Softmax(model)
 
     train(world, model)

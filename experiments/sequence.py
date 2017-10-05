@@ -11,7 +11,7 @@ if "DEBUG" in os.environ:
     sys.excepthook = IPython.core.ultratb.FormattedTB(call_pdb=True)
 
 from worlds import Bytes
-from models import Constant, Input, Layer, LReLU, History, Softmax
+from models import Constant, Input, Affine, LReLU, History, Softmax
 from trajectories import policy_gradient, cross_entropy, print_reward
 from optimizers import Adam
 
@@ -42,17 +42,17 @@ def run():
 
     print("\nLast character:\n")
     model = Input(4)
-    model = Layer(model, 4)
+    model = Affine(model, 4)
     model = LReLU(model)
-    model = Layer(model, 4)
+    model = Affine(model, 4)
     model = Softmax(model)
     train(world, model)
 
     print("\nLast two characters:\n")
     model = Input(2, 4)
-    model = Layer(model, 4)
+    model = Affine(model, 4)
     model = LReLU(model)
-    model = Layer(model, 4)
+    model = Affine(model, 4)
     model = History(model, length=2)
     model = Softmax(model)
     train(world, model)
