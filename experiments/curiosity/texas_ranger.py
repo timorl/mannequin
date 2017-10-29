@@ -112,7 +112,7 @@ def run():
     classifier = Softmax(classifier)
 
     agent = walker()
-    agent.load_params(np.random.randn(agent.n_params))
+    agent.load_params(np.random.randn(agent.n_params)*1.5)
 
     MAX_TRAIN_TIME = 200
     trainTimeLeft = MAX_TRAIN_TIME
@@ -170,7 +170,7 @@ def run():
         nonlocal agentOpt, trainTimeLeft, lastScores, curAgentId, motivation
         print("Resetting agent %d."%curAgentId)
         agentOpt = Adam(
-            np.random.randn(agent.n_params),
+            np.random.randn(agent.n_params)*1.5,
             lr=0.05,
             memory=0.9,
         )
@@ -182,13 +182,12 @@ def run():
     while True:
         agent.load_params(agentOpt.get_value())
 
-        realTrajs, curiosityTrajs = world.trajectories(agent, 20)
+        realTrajs, curiosityTrajs = world.trajectories(agent, 30)
         curScore = np.mean(get_rewards(realTrajs, episode=np.sum))/300.
         lastScores.append(curScore)
         lastScores = lastScores[-10:]
         scoreDev = np.std(lastScores)
         scoreMean = np.max([np.abs(np.mean(lastScores)),1.])
-        print(scoreDev/scoreMean)
 
         curCuriosity = np.mean(get_rewards(curiosityTrajs, episode=np.max))
 
@@ -218,10 +217,10 @@ def run():
         else:
             motivation = np.min([motivation+1, MAX_MOTIVATION])
 
-        realTrajs = discount(realTrajs, horizon=300)
+        realTrajs = discount(realTrajs, horizon=200)
         realTrajs = normalize(realTrajs)
         curiosityTrajs = replace_rewards(curiosityTrajs, episode=np.max)
-        realWeight = 0.5
+        realWeight = np.min([scoreDev/scoreMean * 10., 0.9])
         curiosityWeight = 1. - realWeight
         trajs = combine_rewards([realTrajs, curiosityTrajs], [realWeight, curiosityWeight])
         trajs = normalize(trajs)
