@@ -1,5 +1,7 @@
 /__*
 *.py[cod]
 *$py.class
+*.npy
+__*.png
 __pycache__
 .ipynb_checkpoints

@@ -14,30 +14,8 @@ from models import Input, Affine, LReLU, Conv2d, Maxpool, Softmax
 from trajectories import policy_gradient, accuracy, print_reward, get_rewards
 from optimizers import Adams
 
-def print_score(model, train_world, test_world):
-    trajs = train_world.trajectories(None, 2000)
-    trajs = accuracy(trajs, model=model, percent=True)
-    print("train: %6.2f" % np.mean(get_rewards(trajs)), end="")
-
-    trajs = test_world.trajectories(None, 2000)
-    trajs = accuracy(trajs, model=model, percent=True)
-    print_reward(trajs, max_value=100, label=", test:")
-
-def run():
-    model = Input(28, 28)
-    model = Conv2d(model, size=3, channels=8)
-    model = LReLU(model)
-    model = Maxpool(model, size=2)
-    model = Conv2d(model, size=5, channels=16)
-    model = LReLU(model)
-    model = Maxpool(model, size=2)
-    model = Affine(model, 128)
-    model = LReLU(model)
-    model = Affine(model, 10)
-    model = Softmax(model)
-
+def train(model):
     world = Mnist()
-    test_world = Mnist(test=True)
 
     opt = Adams(
         np.random.randn(model.n_params),
@@ -57,7 +35,36 @@ def run():
 
         if i % 20 == 19:
             print("%4d) " % (i+1), flush=True, end="")
-            print_score(model, world, test_world)
+            trajs = world.trajectories(None, 2000)
+            trajs = accuracy(trajs, model=model, percent=True)
+            print_reward(trajs, max_value=100, label="Train accuracy:")
+
+    return opt.get_value()
+
+def run():
+    model = Input(28, 28)
+    model = Conv2d(model, size=3, channels=8)
+    model = LReLU(model)
+    model = Maxpool(model, size=2)
+    model = Conv2d(model, size=5, channels=16)
+    model = LReLU(model)
+    model = Maxpool(model, size=2)
+    model = Affine(model, 128)
+    model = LReLU(model)
+    model = Affine(model, 10)
+    model = Softmax(model)
+
+    if len(sys.argv) >= 2:
+        params = np.load(sys.argv[1])
+    else:
+        params = train(model)
+        np.save("__mnist.npy", params)
+
+    model.load_params(params)
+    test_world = Mnist(test=True)
+    trajs = test_world.trajectories(None, 5000)
+    trajs = accuracy(trajs, model=model, percent=True)
+    print_reward(trajs, max_value=100, label="Test accuracy:")
 
 if __name__ == "__main__":
     run()

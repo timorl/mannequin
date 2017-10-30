@@ -95,6 +95,7 @@ def interesting_part(obs, r):
 
 STATE_SIZE = 24
 ACTION_SIZE = 4
+MAX_STEPS = 200
 
 def walker():
     walker = Input(STATE_SIZE)
@@ -121,7 +122,6 @@ def run():
     def plot_tagged_trajs(trajs):
         nonlocal trainTimeLeft, curAgentId, curMemoryId
         COLORS = ["blue", "red"]
-        plt.ion()
         plt.clf()
         plt.grid()
         plt.gcf().axes[0].set_xlim([-1.25,1.25])
@@ -136,10 +136,15 @@ def run():
                 xs.append(x)
                 ys.append(y)
             plt.plot(xs, ys, color=COLORS[np.argmax(tag)], alpha=0.1)
-        plt.pause(0.01)
+        plt.gcf().set_size_inches(10, 8)
+        plt.gcf().savefig(
+            "__step_a%03d_t%03d.png" %
+                (curAgentId, MAX_TRAIN_TIME-trainTimeLeft),
+            dpi=100
+        )
 
 
-    world = Gym("BipedalWalker-v2", max_steps=1600)
+    world = Gym("BipedalWalker-v2", max_steps=MAX_STEPS)
     world = ActionNoise(world, stddev=0.2)
     world = Curiosity(
                 world,
@@ -166,8 +171,16 @@ def run():
         world.remember(agent)
         boredom = MAX_BOREDOM
         curMemoryId += 1
+    def save_agent():
+        np.save(
+            "__ranger_a%03d_t%03d.npy" %
+                (curAgentId, MAX_TRAIN_TIME-trainTimeLeft),
+            agentOpt.get_value()
+        )
     def reset_agent():
         nonlocal agentOpt, trainTimeLeft, lastScores, curAgentId, motivation
+        if agentOpt is not None:
+            save_agent()
         print("Resetting agent %d."%curAgentId)
         agentOpt = Adam(
             np.random.randn(agent.n_params)*1.5,
@@ -195,8 +208,8 @@ def run():
         print_reward(curiosityTrajs, max_value=1.0, episode=np.max, label="Curiosity reward: ")
         if curCuriosity > 0.85:
             if boredom == 0:
+                save_agent()
                 memorize()
-                world.render(agent)
             else:
                 boredom -= 1
         else:
@@ -205,7 +218,7 @@ def run():
         if scoreDev/scoreMean < 0.010 or trainTimeLeft < 0:
             if motivation == 0:
                 print("Not really learning.")
-                world.render(agent)
+                save_agent()
                 motivation = MAX_MOTIVATION
                 trainTimeLeft = MAX_TRAIN_TIME
                 if curScore < 0.01:
@@ -230,4 +243,11 @@ def run():
         trainTimeLeft -= 1
 
 if __name__ == "__main__":
-    run()
+    if len(sys.argv) >= 2:
+        world = Gym("BipedalWalker-v2", max_steps=MAX_STEPS)
+        agent = walker()
+        for fn in sys.argv[1:]:
+            agent.load_params(np.load(fn))
+            world.render(agent)
+    else:
+        run()
