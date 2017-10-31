@@ -159,11 +159,7 @@ def run():
     MAX_BOREDOM = 3
     boredom = MAX_BOREDOM
 
-    MAX_MOTIVATION = 3
-    motivation = MAX_MOTIVATION
-
     agentOpt = None
-    lastScores = None
 
     def memorize():
         nonlocal boredom, curMemoryId
@@ -178,7 +174,7 @@ def run():
             agentOpt.get_value()
         )
     def reset_agent():
-        nonlocal agentOpt, trainTimeLeft, lastScores, curAgentId, motivation
+        nonlocal agentOpt, trainTimeLeft, curAgentId
         if agentOpt is not None:
             save_agent()
         print("Resetting agent %d."%curAgentId)
@@ -188,19 +184,12 @@ def run():
             memory=0.9,
         )
         trainTimeLeft = MAX_TRAIN_TIME
-        lastScores = [-0.4]
         curAgentId += 1
-        motivation = MAX_MOTIVATION
     reset_agent()
     while True:
         agent.load_params(agentOpt.get_value())
 
         realTrajs, curiosityTrajs = world.trajectories(agent, 30)
-        curScore = np.mean(get_rewards(realTrajs, episode=np.sum))/300.
-        lastScores.append(curScore)
-        lastScores = lastScores[-10:]
-        scoreDev = np.std(lastScores)
-        scoreMean = np.max([np.abs(np.mean(lastScores)),1.])
 
         curCuriosity = np.mean(get_rewards(curiosityTrajs, episode=np.max))
 
@@ -215,25 +204,18 @@ def run():
         else:
             boredom = np.min([boredom+1, MAX_BOREDOM])
 
-        if scoreDev/scoreMean < 0.010 or trainTimeLeft < 0:
-            if motivation == 0:
-                print("Not really learning.")
-                save_agent()
-                motivation = MAX_MOTIVATION
-                trainTimeLeft = MAX_TRAIN_TIME
-                if curScore < 0.01:
-                    memorize()
-                    reset_agent()
-                    continue
-            else:
-                motivation -= 1
-        else:
-            motivation = np.min([motivation+1, MAX_MOTIVATION])
+        if trainTimeLeft < 0:
+            print("Timeout.")
+            save_agent()
+            trainTimeLeft = MAX_TRAIN_TIME
+            memorize()
+            reset_agent()
+            continue
 
         realTrajs = discount(realTrajs, horizon=200)
         realTrajs = normalize(realTrajs)
         curiosityTrajs = replace_rewards(curiosityTrajs, episode=np.max)
-        realWeight = np.min([scoreDev/scoreMean * 10., 0.9])
+        realWeight = 0.5
         curiosityWeight = 1. - realWeight
         trajs = combine_rewards([realTrajs, curiosityTrajs], [realWeight, curiosityWeight])
         trajs = normalize(trajs)
