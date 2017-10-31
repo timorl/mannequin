@@ -39,19 +39,19 @@ class BaseTwoMoments(BaseOptimizer):
         self.apply_gradient = apply_gradient
 
 class RunningMean(object):
-    def __init__(self, decay):
-        decay = float(decay)
-        assert decay >= 0.0
-        assert decay < 1.0
+    def __init__(self, memory):
+        memory = float(memory)
+        assert memory >= 0.0
+        assert memory < 1.0
 
         biased_mean = 0.0
-        decay_power = 1.0
+        memory_power = 1.0
 
         def update(value):
-            nonlocal biased_mean, decay_power
+            nonlocal biased_mean, memory_power
 
-            biased_mean = biased_mean * decay + value * (1.0 - decay)
-            decay_power *= decay
+            biased_mean = biased_mean * memory + value * (1.0 - memory)
+            memory_power *= memory
 
-        self.get = lambda: biased_mean / (1.0 - decay_power)
+        self.get = lambda: biased_mean / (1.0 - memory_power)
         self.update = update

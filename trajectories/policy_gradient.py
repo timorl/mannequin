@@ -2,6 +2,9 @@
 from .retrace import retrace
 
 def policy_gradient(trajs, *, policy, state_grad_clip=1.0):
+    if policy.n_states <= 0:
+        return policy_gradient_stateless(trajs, policy=policy)
+
     import numpy as np
 
     grad_sum = 0.0
@@ -55,3 +58,32 @@ def policy_gradient(trajs, *, policy, state_grad_clip=1.0):
                 state_grads[p] = g
 
     return grad_sum / grad_count
+
+def policy_gradient_stateless(trajs, *, policy):
+    import numpy as np
+
+    inps = []
+    real_outs = []
+    rews = []
+
+    for t in trajs:
+        for i, o, r in t:
+            inps.append(i)
+            real_outs.append(o)
+            rews.append(r)
+
+    inps = np.asarray(inps)
+    real_outs = np.asarray(real_outs)
+    rews = np.asarray(rews)
+
+    policy_outs = policy.outputs(inps)
+    policy_outs = np.asarray(policy_outs)
+
+    assert policy_outs.shape == real_outs.shape
+    assert rews.shape == (len(rews),)
+
+    # True off-policy version of REINFORCE (!!!)
+    grads = np.multiply((real_outs - policy_outs).T, rews.T).T
+
+    grad_sum = policy.param_gradient_sum(inps, grads)
+    return grad_sum / len(grads)

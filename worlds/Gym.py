@@ -58,6 +58,16 @@ class Gym(BaseWorld):
                 raise ValueError("Unsupported space: %s" % act_space)
 
         def trajectories(agent, n):
+            # Avoid creating too many copies
+            if n > 16:
+                result = []
+                while len(result) < n:
+                    result += trajectories(
+                        agent,
+                        min(n - len(result), 16)
+                    )
+                return result
+
             envs = [get_env() for _ in range(n)]
             trajs = [[] for _ in envs]
 

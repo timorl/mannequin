@@ -1,14 +1,16 @@
 
-def retrace(trajs, *, model,
-        max_steps=-1,
-        with_inputs=False):
+def retrace(trajs, *, model, with_inputs=False):
+    if model.n_states <= 0:
+        return retrace_stateless(trajs, model=model,
+            with_inputs=with_inputs)
+
     import numpy as np
 
     outputs = [[] for _ in trajs]
     states = [np.zeros(model.n_states)] * len(trajs)
     step = 0
 
-    while step != max_steps:
+    while True:
         # Find trajectories that are still active
         pick = [p for p, t in enumerate(trajs) if len(t) > step]
         if len(pick) < 1:
@@ -48,3 +50,25 @@ def retrace(trajs, *, model,
         step += 1
 
     return outputs
+
+def retrace_stateless(trajs, *, model, with_inputs=False):
+    import numpy as np
+
+    all_inputs = []
+    for t in trajs:
+        for i, o, r in t:
+            all_inputs.append(i)
+    all_inputs = np.asarray(all_inputs)
+
+    all_outputs = model.outputs(all_inputs)
+    all_outputs = np.asarray(all_outputs)
+    assert len(all_outputs) == len(all_inputs)
+
+    if with_inputs:
+        all_outputs = zip(all_inputs, all_outputs)
+    all_outputs = all_outputs.__iter__()
+
+    return [
+        [next(all_outputs) for _ in t]
+        for t in trajs
+    ]
