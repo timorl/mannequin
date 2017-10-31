@@ -156,16 +156,13 @@ def run():
                     ),
                 plot=plot_tagged_trajs
             )
-    MAX_BOREDOM = 3
-    boredom = MAX_BOREDOM
 
     agentOpt = None
 
     def memorize():
-        nonlocal boredom, curMemoryId
+        nonlocal curMemoryId
         print("Memorizing %d..."%curMemoryId)
         world.remember(agent)
-        boredom = MAX_BOREDOM
         curMemoryId += 1
     def save_agent():
         np.save(
@@ -191,18 +188,11 @@ def run():
 
         realTrajs, curiosityTrajs = world.trajectories(agent, 30)
 
-        curCuriosity = np.mean(get_rewards(curiosityTrajs, episode=np.max))
-
         print_reward(realTrajs, max_value=300.0, episode=np.sum, label="Real reward:      ")
         print_reward(curiosityTrajs, max_value=1.0, episode=np.max, label="Curiosity reward: ")
-        if curCuriosity > 0.85:
-            if boredom == 0:
-                save_agent()
-                memorize()
-            else:
-                boredom -= 1
-        else:
-            boredom = np.min([boredom+1, MAX_BOREDOM])
+        if trainTimeLeft % 20 == 0:
+            save_agent()
+            memorize()
 
         if trainTimeLeft < 0:
             print("Timeout.")
