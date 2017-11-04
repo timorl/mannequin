@@ -1,7 +1,9 @@
 
 from .replace_rewards import replace_rewards
 
-def discount(trajs, *, horizon):
+def discount(trajs, *,
+        horizon,
+        combine=lambda a, b: a+b):
     multiplier = 1.0 - (1.0 / horizon)
 
     def process(rew):
@@ -9,7 +11,8 @@ def discount(trajs, *, horizon):
         reversed_out = []
 
         for r in reversed(rew):
-            rew_sum = rew_sum * multiplier + float(r)
+            rew_sum *= multiplier
+            rew_sum = float(combine(rew_sum, float(r)))
             reversed_out.append(rew_sum)
 
         return list(reversed(reversed_out))

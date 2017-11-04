@@ -2,12 +2,12 @@
 from . import BaseWorld
 
 class Cache(BaseWorld):
-    def __init__(self, max_size=None):
+    def __init__(self, max_size=None, delay=0):
         import numpy as np
 
         all_data = []
 
-        def add_trajectory(*trajs):
+        def add_trajectories(trajs):
             nonlocal all_data
 
             for t in trajs:
@@ -39,10 +39,13 @@ class Cache(BaseWorld):
             if len(all_data) < 1:
                 raise ValueError("Experience cache is empty")
 
+            size = max((len(all_data) + 1) // 2, len(all_data) - delay)
+
             return [
                 [(o, a, r) for o, a, r in zip(*all_data[i])]
-                for i in rng.choice(len(all_data), size=n)
+                for i in rng.choice(size, size=n)
             ]
 
-        self.add_trajectory = add_trajectory
+        self.add_trajectories = add_trajectories
+        self.add_trajectory = lambda *ts: add_trajectories(ts)
         self.trajectories = trajectories
