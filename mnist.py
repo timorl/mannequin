@@ -12,15 +12,14 @@ if "DEBUG" in os.environ:
 from worlds import Mnist
 from models import Input, Affine, LReLU, Conv2d, Maxpool, Softmax
 from trajectories import policy_gradient, accuracy, print_reward, get_rewards
-from optimizers import Adams
+from optimizers import Adam
 
 def train(model):
     world = Mnist()
 
-    opt = Adams(
+    opt = Adam(
         np.random.randn(model.n_params),
-        lr=0.06,
-        power=1.1
+        lr=0.1
     )
 
     for i in range(600):

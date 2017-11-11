@@ -4,7 +4,7 @@ from . import BaseTable
 class Mnist(BaseTable):
     data = None
 
-    def __init__(self, *, test=False):
+    def __init__(self, *, test=False, rows=lambda x, y: True):
         import numpy as np
 
         if Mnist.data == None:
@@ -16,4 +16,12 @@ class Mnist(BaseTable):
             )
 
         data = Mnist.data.test if test else Mnist.data.train
-        super().__init__(data.images, data.labels)
+
+        images = data.images
+        labels = data.labels
+        idx = np.array([
+            i for i in range(len(images))
+            if rows(images[i], labels[i])
+        ])
+
+        super().__init__(images[idx], labels[idx])
