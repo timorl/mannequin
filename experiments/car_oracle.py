@@ -53,7 +53,7 @@ def save_plot(file_name, trajs, predictions):
 
 def curiosity(world):
     world = ActionNoise(world, stddev=0.1)
-    memory = Cache(max_size=10)
+    memory = Cache(max_size=100)
 
     log_dir = "__oracle"
     if not os.path.exists(log_dir):
@@ -68,7 +68,7 @@ def curiosity(world):
 
     oracle = build_oracle()
     oracle_opt = Adam(
-        np.random.randn(oracle.n_params) * 0.01,
+        np.random.randn(oracle.n_params) * 0.1,
         lr=0.05,
         memory=0.95
     )
@@ -92,17 +92,17 @@ def curiosity(world):
 
         agent_trajs = [
             [
-                (o1, a1, 100.0 * np.mean(np.square((o2-o1) - delta_p)))
+                (o1, a1, np.log(np.mean(np.square((o2-o1) - delta_p))))
                 for (o1, a1, r1), (o2, a2, r2), delta_p
                 in zip(t, t[10:], p)
             ]
             for t, p in zip(agent_trajs, predictions)
         ]
-        print_reward(agent_trajs, episode=np.mean, max_value=1.0)
+        agent_trajs = replace_rewards(agent_trajs,
+            episode=lambda rs: np.max(rs) / len(rs))
+        print_reward(agent_trajs, max_value=10.0)
 
-        agent_trajs = discount(agent_trajs, horizon=100)
         agent_trajs = normalize(agent_trajs)
-
         grad = policy_gradient(agent_trajs, policy=agent)
         agent_opt.apply_gradient(grad)
 

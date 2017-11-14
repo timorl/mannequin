@@ -2,8 +2,8 @@
 from .retrace import retrace
 
 def replace_rewards(trajs, *,
-        reward=lambda x:x,
-        episode=lambda x:x,
+        reward=lambda x: x,
+        episode=lambda x: x,
         model=None):
     import numpy as np
 

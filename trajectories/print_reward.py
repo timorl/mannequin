@@ -4,13 +4,14 @@ from .get_rewards import get_rewards
 def print_reward(trajs, *, max_value,
         label="Reward/episode: ",
         after="",
+        reward=lambda x: x,
         episode=None):
     import numpy as np
 
     if episode is None:
         episode = np.sum
 
-    reward = np.mean(get_rewards(trajs, episode=episode))
+    reward = np.mean(get_rewards(trajs, reward=reward, episode=episode))
     info = ("%%%d.2f" % len("-%.2f" % max_value)) % reward
 
     bar = max(0.0, min(1.0, abs(reward) / abs(max_value)))

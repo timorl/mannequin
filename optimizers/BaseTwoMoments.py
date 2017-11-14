@@ -3,8 +3,8 @@ from . import BaseOptimizer
 
 class BaseTwoMoments(BaseOptimizer):
     def __init__(self, value, update_rule, *,
-            memory=0.9,
-            var_memory=0.999,
+            memory,
+            var_memory,
             print_norm=False):
         import numpy as np
         import os
