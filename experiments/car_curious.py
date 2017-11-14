@@ -3,8 +3,8 @@
 import os
 import sys
 import numpy as np
-import matplotlib.pyplot as plt
 
+sys.path.append("..")
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 if "DEBUG" in os.environ:
     import IPython.core.ultratb
@@ -35,6 +35,7 @@ def save_plot(file_name, classifier, trajs, *,
         xs=lambda t: [o[0] for o, a, r in t],
         ys=lambda t: [o[1] for o, a, r in t],
         color=lambda t: ["b", "r"][np.argmax(t[0][1])]):
+    import matplotlib.pyplot as plt
     coords = (np.mgrid[0:11,0:11].reshape(2,-1).T
         * [0.175, 0.015] - [1.25, 0.075])
     plt.clf()
